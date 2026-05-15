@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VirtualStore — Sua loja virtual, do zero ao lucro</title>
+  <meta name="description" content="Plataforma completa com gestão de produtos, pedidos, clientes, relatórios de margem de lucro, integração com WhatsApp e Mercado Pago." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          animation: { pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Inter', system-ui, sans-serif; }
+    .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body class="min-h-screen bg-white">
+
+  <!-- Nav -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-pink-500 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </div>
+        <span class="font-black text-gray-900 text-lg">VirtualStore</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-8 text-sm text-gray-600">
+        <a href="#funcionalidades" class="hover:text-gray-900 transition-colors">Funcionalidades</a>
+        <a href="#loja" class="hover:text-gray-900 transition-colors">Loja virtual</a>
+        <a href="#relatorios" class="hover:text-gray-900 transition-colors">Relatórios</a>
+        <a href="#integracoes" class="hover:text-gray-900 transition-colors">Integrações</a>
+      </nav>
+      <a href="https://wa.me/5519981687551" target="_blank" rel="noopener noreferrer"
+        class="hidden md:inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+        Falar com desenvolvedor
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute top-0 left-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-fuchsia-500/15 rounded-full blur-3xl"></div>
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-36 text-center">
+      <div class="inline-flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 text-pink-300 text-xs font-medium px-4 py-1.5 rounded-full mb-8">
+        <span class="w-1.5 h-1.5 bg-pink-400 rounded-full pulse-dot"></span>
+        Plataforma completa de vendas online
+      </div>
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
+        Sua loja virtual,
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-fuchsia-400">
+          do zero ao lucro
+        </span>
+      </h1>
+      <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+        Plataforma completa com gestão de produtos, pedidos, clientes, relatórios de margem de lucro, integração com WhatsApp e Mercado Pago — tudo em um só lugar.
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="https://wa.me/5519981687551" target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-2xl transition-colors text-base">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Quero minha loja
+        </a>
+        <a href="#funcionalidades"
+          class="inline-flex items-center gap-2 border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-semibold px-8 py-4 rounded-2xl transition-colors text-base">
+          Ver funcionalidades
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats strip -->
+  <section class="border-y border-gray-100 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <div><p class="text-3xl font-black text-gray-900 mb-1">13+</p><p class="text-sm text-gray-500">Módulos integrados</p></div>
+      <div><p class="text-3xl font-black text-gray-900 mb-1">100%</p><p class="text-sm text-gray-500">Responsivo mobile</p></div>
+      <div><p class="text-3xl font-black text-gray-900 mb-1">2</p><p class="text-sm text-gray-500">Formas de checkout</p></div>
+      <div><p class="text-3xl font-black text-gray-900 mb-1">∞</p><p class="text-sm text-gray-500">Produtos e pedidos</p></div>
+    </div>
+  </section>
+
+  <!-- Features grid -->
+  <section id="funcionalidades" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">Tudo que você precisa para vender</h2>
+      <p class="text-gray-500 text-lg max-w-xl mx-auto">Cada módulo foi pensado para simplificar a operação da sua loja e maximizar suas vendas.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Gestão de Produtos -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-pink-50 text-pink-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Gestão de Produtos</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Cadastre produtos com variações de tamanho e cor, estoque individual por variação, múltiplas imagens, categoria, preço de destaque e controle de visibilidade.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Variações tamanho × cor</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Estoque por variação</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Validação de estoque no carrinho</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Produtos em destaque</li>
+        </ul>
+      </div>
+
+      <!-- Gestão de Pedidos -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-blue-50 text-blue-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Gestão de Pedidos</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Acompanhe cada pedido do recebimento à entrega com fluxo de status completo, código de rastreio e comprovante de envio.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Fluxo de status completo</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Código de rastreio</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Comprovante de envio</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cancelamento com restauração de estoque</li>
+        </ul>
+      </div>
+
+      <!-- Variações Personalizadas -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-violet-50 text-violet-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Variações Personalizadas</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Crie tipos de variação totalmente personalizados para sua loja — tamanhos, cores, materiais ou qualquer atributo.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Tipos de variação customizados</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Valores livres por tipo</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Reutilização em produtos</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Estoque por combinação</li>
+        </ul>
+      </div>
+
+      <!-- Relatórios & Analytics -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-purple-50 text-purple-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Relatórios & Analytics</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Tome decisões baseadas em dados com relatórios de faturamento, vendas por estado, por categoria e margem de lucro.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Faturamento mensal</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Vendas por estado</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Por categoria</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Margem de lucro</li>
+        </ul>
+      </div>
+
+      <!-- Margem de Lucro -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-emerald-50 text-emerald-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Margem de Lucro</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Cadastre o valor de custo de cada produto e acompanhe a margem de lucro real por produto vendido e por pedido.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Custo por produto</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Lucro por pedido</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>% de margem</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Alertas de margem negativa</li>
+        </ul>
+      </div>
+
+      <!-- Gestão de Clientes -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-orange-50 text-orange-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Gestão de Clientes</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Visualize todos os seus clientes, histórico de pedidos e informações de contato em um painel centralizado.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cadastro automático</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Histórico de pedidos</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dados de contato</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Endereço salvo</li>
+        </ul>
+      </div>
+
+      <!-- Avaliações -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-yellow-50 text-yellow-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Avaliações</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Sistema de reviews com moderação manual. Aprove ou reprove avaliações antes de exibi-las na vitrine.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Avaliação por estrelas</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Comentários</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Aprovação manual</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Exibição na vitrine</li>
+        </ul>
+      </div>
+
+      <!-- Lista de Espera -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-indigo-50 text-indigo-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Lista de Espera</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Capture o interesse de clientes em produtos esgotados. Notifique automaticamente quando o estoque for reposto.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Fila por variação</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Notificação por e-mail</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Controle de notificados</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Recuperação de vendas</li>
+        </ul>
+      </div>
+
+      <!-- Carrinhos Abandonados -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-red-50 text-red-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Carrinhos Abandonados</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Visualize e recupere vendas perdidas identificando clientes que não finalizaram a compra.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Identificação automática</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Lista de itens</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dados do cliente</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Ação de recuperação</li>
+        </ul>
+      </div>
+
+      <!-- Configurações -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-gray-100 text-gray-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Configurações da Loja</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Personalize sua loja com logo, cor da marca, informações de contato e integrações de pagamento.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Logo e identidade</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cor dos botões e menus</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>WhatsApp e Instagram</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mensagem personalizada</li>
+        </ul>
+      </div>
+
+      <!-- Mercado Pago -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-cyan-50 text-cyan-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Mercado Pago</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Ofereça pagamento online com Mercado Pago integrado. Aceite cartão, Pix e boleto sem sair da loja.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cartão de crédito</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Pix</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Boleto</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Checkout nativo</li>
+        </ul>
+      </div>
+
+      <!-- Checkout WhatsApp -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+        <div class="inline-flex p-3 rounded-xl bg-green-50 text-green-600 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3 class="font-bold text-gray-900 text-lg mb-2">Checkout via WhatsApp</h3>
+        <p class="text-gray-500 text-sm leading-relaxed mb-4">Receba pedidos diretamente no WhatsApp com mensagem estruturada contendo todos os dados do cliente.</p>
+        <ul class="space-y-1.5">
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mensagem formatada</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Itens e valores</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dados do cliente</li>
+          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Configuração simples</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Admin panel highlight -->
+  <section class="bg-gray-950 text-white py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-16 items-center">
+        <div>
+          <div class="inline-flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 text-pink-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">
+            Painel administrativo
+          </div>
+          <h2 class="text-3xl md:text-4xl font-black mb-6 leading-tight">Controle total da sua operação</h2>
+          <p class="text-gray-400 leading-relaxed mb-8">O painel admin reúne todos os módulos em uma interface limpa e intuitiva. Gerencie produtos, pedidos, clientes e configurações sem precisar de conhecimento técnico.</p>
+          <div class="space-y-4">
+            <div class="flex gap-3">
+              <div class="mt-1 w-5 h-5 rounded-full bg-pink-500/20 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div><p class="font-semibold text-sm text-white">Produtos com variações</p><p class="text-gray-400 text-xs mt-0.5">Cadastre tamanhos, cores e estoque individual por combinação</p></div>
+            </div>
+            <div class="flex gap-3">
+              <div class="mt-1 w-5 h-5 rounded-full bg-pink-500/20 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div><p class="font-semibold text-sm text-white">Fluxo completo de pedidos</p><p class="text-gray-400 text-xs mt-0.5">De pendente a entregue, com rastreio e comprovante de envio</p></div>
+            </div>
+            <div class="flex gap-3">
+              <div class="mt-1 w-5 h-5 rounded-full bg-pink-500/20 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div><p class="font-semibold text-sm text-white">Relatórios em tempo real</p><p class="text-gray-400 text-xs mt-0.5">Faturamento, ticket médio, cancelamentos e margem de lucro</p></div>
+            </div>
+            <div class="flex gap-3">
+              <div class="mt-1 w-5 h-5 rounded-full bg-pink-500/20 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div><p class="font-semibold text-sm text-white">Configuração sem código</p><p class="text-gray-400 text-xs mt-0.5">Personalize cores, logo e integrações pelo próprio painel</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-3">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            <span class="text-gray-500 text-xs ml-2">Painel Admin</span>
+          </div>
+          <div class="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3"><span class="text-gray-400 text-sm">Produtos ativos</span><span class="font-bold text-sm text-pink-400">48</span></div>
+          <div class="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3"><span class="text-gray-400 text-sm">Pedidos hoje</span><span class="font-bold text-sm text-blue-400">12</span></div>
+          <div class="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3"><span class="text-gray-400 text-sm">Faturamento mês</span><span class="font-bold text-sm text-emerald-400">R$ 8.420</span></div>
+          <div class="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3"><span class="text-gray-400 text-sm">Margem média</span><span class="font-bold text-sm text-purple-400">34,2%</span></div>
+          <div class="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3"><span class="text-gray-400 text-sm">Avaliações pendentes</span><span class="font-bold text-sm text-yellow-400">3</span></div>
+          <div class="flex items-center justify-between bg-gray-800/50 rounded-xl px-4 py-3"><span class="text-gray-400 text-sm">Carrinhos abandonados</span><span class="font-bold text-sm text-orange-400">7</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reports section -->
+  <section id="relatorios" class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">Relatórios que geram decisões</h2>
+        <p class="text-gray-500 text-lg max-w-xl mx-auto">Dados claros sobre faturamento, performance por região e margem de lucro real de cada produto.</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div class="inline-flex p-2.5 rounded-xl text-blue-600 bg-blue-50 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
+          <h3 class="font-bold text-gray-900 mb-2">Faturamento mensal</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Gráfico de barras com receita mês a mês para o ano selecionado. Filtre por mês específico para análise detalhada.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div class="inline-flex p-2.5 rounded-xl text-pink-600 bg-pink-50 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <h3 class="font-bold text-gray-900 mb-2">Vendas por estado</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Ranking de estados por faturamento com pedidos, receita e ticket médio. Identifique seus mercados mais fortes.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div class="inline-flex p-2.5 rounded-xl text-purple-600 bg-purple-50 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <h3 class="font-bold text-gray-900 mb-2">Vendas por categoria</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Descubra quais categorias vendem mais e direcione seu estoque e marketing para os produtos certos.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div class="inline-flex p-2.5 rounded-xl text-emerald-600 bg-emerald-50 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+          </div>
+          <h3 class="font-bold text-gray-900 mb-2">Margem por produto</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Veja lucro e margem % de cada produto vendido no período. Badge verde/amarelo/vermelho por performance.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div class="inline-flex p-2.5 rounded-xl text-indigo-600 bg-indigo-50 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </div>
+          <h3 class="font-bold text-gray-900 mb-2">Margem por pedido</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Analise a lucratividade de cada pedido individualmente. Identifique pedidos de alto e baixo retorno.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
+          <div class="inline-flex p-2.5 rounded-xl text-red-600 bg-red-50 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          </div>
+          <h3 class="font-bold text-gray-900 mb-2">Cancelamentos</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Veja os motivos de cancelamento mais frequentes e o volume de vendas perdidas para reduzir a taxa.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Store front section -->
+  <section id="loja" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid md:grid-cols-2 gap-16 items-center">
+      <div>
+        <div class="inline-flex items-center gap-2 bg-pink-50 border border-pink-100 text-pink-600 text-xs font-medium px-4 py-1.5 rounded-full mb-6">
+          Loja virtual
+        </div>
+        <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-6 leading-tight">Vitrine bonita e responsiva para seus clientes</h2>
+        <p class="text-gray-500 leading-relaxed mb-8">Seus clientes têm acesso a uma loja moderna com catálogo de produtos, carrinho, lista de favoritos, avaliações e checkout — tudo otimizado para mobile.</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>Vitrine responsiva</div>
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>Busca de produtos</div>
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>Lista de favoritos</div>
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>Carrinho persistente</div>
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>Mobile-first</div>
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5"/><circle cx="17.5" cy="10.5" r="0.5"/><circle cx="8.5" cy="7.5" r="0.5"/><circle cx="6.5" cy="12.5" r="0.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></div>Cores personalizáveis</div>
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>Vendas por estado</div>
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>Categorias e filtros</div>
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>Rastreio de entrega</div>
+          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-pink-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>Notificações por e-mail</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-pink-50 rounded-2xl p-5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <p class="font-bold text-gray-900 text-sm mb-1">Vitrine</p>
+          <p class="text-gray-500 text-xs leading-relaxed">Catálogo com filtro por categoria e busca</p>
+        </div>
+        <div class="bg-blue-50 rounded-2xl p-5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <p class="font-bold text-gray-900 text-sm mb-1">Carrinho</p>
+          <p class="text-gray-500 text-xs leading-relaxed">Persistente com variações de produto</p>
+        </div>
+        <div class="bg-purple-50 rounded-2xl p-5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <p class="font-bold text-gray-900 text-sm mb-1">Favoritos</p>
+          <p class="text-gray-500 text-xs leading-relaxed">Lista de desejos sincronizada</p>
+        </div>
+        <div class="bg-emerald-50 rounded-2xl p-5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <p class="font-bold text-gray-900 text-sm mb-1">Pedidos</p>
+          <p class="text-gray-500 text-xs leading-relaxed">Histórico e rastreio na conta</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Integrations -->
+  <section id="integracoes" class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">Integrações prontas para usar</h2>
+        <p class="text-gray-500 text-lg max-w-xl mx-auto">Configure uma vez e receba pedidos e pagamentos automaticamente.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl border border-gray-100 p-8 text-center hover:shadow-md transition-shadow">
+          <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 class="font-bold text-gray-900 text-lg mb-2">WhatsApp</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-4">Checkout direto pelo WhatsApp com mensagem automática contendo todos os dados do pedido formatados.</p>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mensagem estruturada</div>
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dados do cliente</div>
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Itens e valores</div>
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Endereço de entrega</div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-8 text-center hover:shadow-md transition-shadow">
+          <div class="w-14 h-14 bg-cyan-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <h3 class="font-bold text-gray-900 text-lg mb-2">Mercado Pago</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-4">Pagamento online com checkout nativo do Mercado Pago. Aceite cartão, Pix e boleto sem sair da loja.</p>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cartão de crédito/débito</div>
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Pix instantâneo</div>
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Boleto bancário</div>
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Checkout seguro</div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-8 text-center hover:shadow-md transition-shadow">
+          <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <h3 class="font-bold text-gray-900 text-lg mb-2">E-mail</h3>
+          <p class="text-gray-500 text-sm leading-relaxed mb-4">Notificações automáticas por e-mail para confirmação de pedido, atualização de status e reposição de estoque.</p>
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Confirmação de pedido</div>
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Atualização de status</div>
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Lista de espera</div>
+            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>SMTP configurável</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA / Developer contact -->
+  <section class="py-20 bg-gray-950 text-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="inline-flex items-center gap-2 bg-pink-500/10 border border-pink-500/20 text-pink-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">
+        Desenvolvedor
+      </div>
+      <h2 class="text-3xl md:text-4xl font-black mb-4">Quer uma loja igual para o seu negócio?</h2>
+      <p class="text-gray-400 text-lg leading-relaxed mb-8 max-w-xl mx-auto">
+        Entre em contato e eu configuro toda a plataforma para você — do zero ao ar, pronto para vender.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+        <a href="https://wa.me/5519981687551" target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-2xl transition-colors text-base">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Falar no WhatsApp
+        </a>
+      </div>
+      <div class="border-t border-gray-800 pt-8">
+        <p class="text-gray-500 text-sm">
+          Desenvolvido por <span class="text-white font-semibold">Diego Benedetti</span>
+          · Desenvolvimento de lojas virtuais sob medida
+        </p>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>
