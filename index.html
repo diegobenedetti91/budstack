@@ -3,710 +3,930 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VirtualStore — Sua loja virtual, do zero ao lucro</title>
-  <meta name="description" content="Plataforma completa com gestão de produtos, pedidos, clientes, relatórios de margem de lucro, integração com WhatsApp e Mercado Pago." />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-          animation: { pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
-        }
-      }
-    }
-  </script>
+  <title>VirtualStore by BudStack — Loja virtual de moda que vende e lucra no automático</title>
+  <meta name="description" content="Loja virtual completa para moda: checkout com Pix e cartão, atendimento com IA 24h, nota fiscal e etiqueta de envio automáticas, rastreio, cupons, promoções e relatórios de lucro real." />
+  <meta property="og:title" content="VirtualStore by BudStack — Sua loja de moda vendendo no automático" />
+  <meta property="og:description" content="Do clique à entrega sem trabalho manual: pagamento, nota fiscal, etiqueta, rastreio e atendimento com IA em uma só plataforma." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#2F5BFF" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    * { font-family: 'Inter', system-ui, sans-serif; }
-    .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-    .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
+    :root {
+      --ink: #0B1324;
+      --ink-2: #334155;
+      --muted: #64748B;
+      --line: #E6EAF2;
+      --bg: #FFFFFF;
+      --bg-soft: #F6F8FC;
+      --blue: #2F5BFF;
+      --blue-600: #2449E0;
+      --blue-50: #EEF2FF;
+      --cyan: #00C2FF;
+      --violet: #7B2FFF;
+      --green: #12B76A;
+      --green-50: #E8F8F0;
+      --amber: #F59E0B;
+      --amber-50: #FFF6E5;
+      --red: #F04438;
+      --radius: 18px;
+      --shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 32px -12px rgba(16,24,40,.12);
+      --shadow-lg: 0 2px 4px rgba(16,24,40,.04), 0 30px 60px -20px rgba(16,24,40,.22);
+      --grad: linear-gradient(120deg, var(--cyan) 0%, var(--blue) 45%, var(--violet) 100%);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    img, svg { display: block; }
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, h4 { margin: 0; line-height: 1.15; letter-spacing: -0.02em; }
+    p { margin: 0; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    .wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+    .ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .ico.sm { width: 16px; height: 16px; }
+    .ico.xs { width: 14px; height: 14px; }
+    .grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 52px; padding: 0 26px; border-radius: 999px; font-weight: 700; font-size: 15.5px; transition: transform .2s ease, box-shadow .2s ease, background .2s ease; white-space: nowrap; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--blue); color: #fff; box-shadow: 0 10px 24px -10px rgba(47,91,255,.7); }
+    .btn-primary:hover { background: var(--blue-600); box-shadow: 0 14px 28px -10px rgba(47,91,255,.8); }
+    .btn-ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .btn-ghost:hover { border-color: #CBD3E1; }
+    .btn-white { background: #fff; color: var(--ink); }
+    .btn-sm { height: 42px; padding: 0 18px; font-size: 14px; }
+
+    /* Header */
+    .header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.82); backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+    .header.scrolled { border-bottom-color: var(--line); }
+    .header .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
+    .logo-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--grad); display: grid; place-items: center; color: #fff; }
+    .logo small { display: block; font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0; margin-top: -3px; }
+    .nav { display: flex; gap: 30px; font-size: 14.5px; font-weight: 600; color: var(--ink-2); }
+    .nav a:hover { color: var(--blue); }
+    .menu-btn { display: none; width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line); background: #fff; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); }
+    .mobile-nav { display: none; border-top: 1px solid var(--line); background: #fff; padding: 12px 20px 20px; }
+    .mobile-nav a { display: block; padding: 12px 0; font-weight: 600; border-bottom: 1px solid var(--line); }
+    .mobile-nav .btn { width: 100%; margin-top: 16px; }
+    .mobile-nav.open { display: block; }
+
+    /* Hero */
+    .hero { position: relative; padding: 72px 0 40px; overflow: hidden; }
+    .hero::before { content: ""; position: absolute; inset: -40% -20% auto; height: 900px; background: radial-gradient(closest-side, rgba(47,91,255,.10), transparent 70%), radial-gradient(closest-side at 80% 30%, rgba(123,47,255,.08), transparent 70%); pointer-events: none; }
+    .hero-grid { position: relative; display: grid; grid-template-columns: 1.02fr 1fr; gap: 56px; align-items: center; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border-radius: 999px; background: #fff; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink-2); box-shadow: var(--shadow); }
+    .eyebrow b { background: var(--blue-50); color: var(--blue); padding: 3px 10px; border-radius: 999px; font-size: 12px; }
+    .hero h1 { font-size: clamp(38px, 5.4vw, 62px); font-weight: 800; margin: 22px 0 20px; letter-spacing: -0.035em; }
+    .hero .lead { font-size: 18.5px; color: var(--ink-2); max-width: 540px; }
+    .hero-ctas { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+    .hero-checks { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 30px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
+    .hero-checks span { display: inline-flex; align-items: center; gap: 7px; }
+    .hero-checks .ico { color: var(--green); }
+
+    /* Hero visual */
+    .stage { position: relative; min-height: 520px; }
+    .browser { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow-lg); overflow: hidden; }
+    .browser-bar { display: flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-bottom: 1px solid var(--line); background: #FAFBFE; }
+    .browser-bar i { width: 10px; height: 10px; border-radius: 50%; background: #E3E7EF; }
+    .browser-bar .url { margin-left: 12px; flex: 1; height: 22px; border-radius: 6px; background: #EFF2F8; font-size: 11px; color: var(--muted); display: flex; align-items: center; padding: 0 10px; }
+    .shop-top { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; font-size: 12px; font-weight: 700; }
+    .shop-top .pill { background: var(--ink); color: #fff; font-size: 10px; padding: 4px 10px; border-radius: 99px; font-weight: 600; }
+    .promo-strip { background: var(--ink); color: #fff; font-size: 10.5px; text-align: center; padding: 6px; font-weight: 600; letter-spacing: .02em; }
+    .shop-hero { margin: 0 18px; height: 150px; border-radius: 14px; background: linear-gradient(135deg, #1C2440 0%, #3A2E6E 60%, #6B3FA8 100%); position: relative; overflow: hidden; color: #fff; padding: 22px; }
+    .shop-hero::after { content: ""; position: absolute; right: -30px; top: -20px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(0,194,255,.55), transparent 65%); }
+    .shop-hero small { font-size: 10px; font-weight: 700; letter-spacing: .12em; opacity: .8; }
+    .shop-hero h4 { font-size: 22px; margin-top: 6px; max-width: 200px; }
+    .shop-hero .mini-btn { display: inline-block; margin-top: 12px; background: #fff; color: var(--ink); font-size: 10.5px; padding: 6px 12px; border-radius: 99px; font-weight: 700; }
+    .products { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px 18px 20px; }
+    .p-card .ph { aspect-ratio: 3/4; border-radius: 12px; position: relative; overflow: hidden; }
+    .p-card .ph .tag { position: absolute; top: 8px; left: 8px; background: var(--red); color: #fff; font-size: 9.5px; font-weight: 700; padding: 3px 7px; border-radius: 6px; }
+    .p-card .ph .heart { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.9); display: grid; place-items: center; color: var(--ink); }
+    .p-card .nm { font-size: 11px; font-weight: 600; margin-top: 8px; color: var(--ink-2); }
+    .p-card .pr { font-size: 12px; font-weight: 800; }
+    .p-card .pr s { color: var(--muted); font-weight: 500; font-size: 10.5px; margin-left: 4px; }
+    .ph-1 { background: linear-gradient(160deg, #E9E4DA, #CFC4B0); }
+    .ph-2 { background: linear-gradient(160deg, #DCE5F5, #A9BCE3); }
+    .ph-3 { background: linear-gradient(160deg, #F3DCD6, #D9A99C); }
+    .garment { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 62%; height: 74%; border-radius: 40% 40% 8px 8px / 22% 22% 8px 8px; background: rgba(255,255,255,.45); }
+    .garment::before, .garment::after { content: ""; position: absolute; top: 6%; width: 32%; height: 52%; background: rgba(255,255,255,.38); border-radius: 12px; }
+    .garment::before { left: -24%; transform: rotate(14deg); }
+    .garment::after { right: -24%; transform: rotate(-14deg); }
+
+    .float { position: absolute; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-lg); padding: 12px 14px; display: flex; align-items: center; gap: 12px; font-size: 12.5px; animation: bob 6s ease-in-out infinite; }
+    .float .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
+    .float b { display: block; font-size: 13px; }
+    .float span { color: var(--muted); font-size: 11.5px; }
+    .f-1 { top: 70px; left: -44px; }
+    .f-2 { top: 230px; right: -36px; animation-delay: -2s; }
+    .f-3 { bottom: -26px; left: 40px; animation-delay: -4s; }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .ic-green { background: var(--green-50); color: var(--green); }
+    .ic-blue { background: var(--blue-50); color: var(--blue); }
+    .ic-amber { background: var(--amber-50); color: #B76E00; }
+    .ic-violet { background: #F3EBFF; color: var(--violet); }
+
+    /* Integrations strip */
+    .strip { padding: 36px 0 20px; }
+    .strip p { text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+    .strip ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 12px; margin-top: 18px; }
+    .strip li { font-size: 14px; font-weight: 700; color: var(--ink-2); padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
+
+    /* Sections */
+    section { scroll-margin-top: 80px; }
+    .sec { padding: 96px 0; }
+    .sec.soft { background: var(--bg-soft); }
+    .sec-head { max-width: 720px; margin: 0 auto 56px; text-align: center; }
+    .kicker { display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--blue); margin-bottom: 14px; }
+    .sec-head h2, .split h2 { font-size: clamp(30px, 3.8vw, 44px); font-weight: 800; letter-spacing: -0.03em; }
+    .sec-head p { font-size: 18px; color: var(--ink-2); margin-top: 16px; }
+
+    /* Flow */
+    .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; position: relative; }
+    .flow::before { content: ""; position: absolute; top: 34px; left: 10%; right: 10%; height: 2px; background: repeating-linear-gradient(90deg, #C9D3EA 0 6px, transparent 6px 12px); }
+    .step { position: relative; text-align: center; padding: 0 6px; }
+    .step .bubble { width: 68px; height: 68px; margin: 0 auto 18px; border-radius: 20px; background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; place-items: center; color: var(--blue); position: relative; }
+    .step .bubble .ico { width: 26px; height: 26px; }
+    .step .n { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 12px; font-weight: 800; display: grid; place-items: center; }
+    .step h3 { font-size: 16px; font-weight: 800; }
+    .step p { font-size: 14px; color: var(--muted); margin-top: 6px; }
+    .flow-note { margin: 44px auto 0; max-width: 640px; text-align: center; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 14px 24px; font-weight: 600; font-size: 15px; color: var(--ink-2); box-shadow: var(--shadow); }
+    .flow-note b { color: var(--ink); }
+
+    /* Split feature blocks */
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; }
+    .split + .split { margin-top: 120px; }
+    .split.rev .copy { order: 2; }
+    .split .copy > p { font-size: 17.5px; color: var(--ink-2); margin-top: 18px; }
+    .feat-list { margin-top: 28px; display: grid; gap: 16px; }
+    .feat-list li { display: flex; gap: 14px; }
+    .feat-list .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; background: var(--blue-50); color: var(--blue); }
+    .feat-list b { display: block; font-size: 15.5px; }
+    .feat-list span { font-size: 14.5px; color: var(--muted); }
+
+    .panel { background: #fff; border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow-lg); padding: 22px; position: relative; }
+    .panel-title { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 800; margin-bottom: 16px; }
+    .panel-title .chip { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 99px; background: var(--bg-soft); color: var(--muted); }
+
+    /* Product page mock */
+    .pdp { display: grid; grid-template-columns: 1fr 1.05fr; gap: 18px; }
+    .pdp .ph { aspect-ratio: 4/5; border-radius: 14px; position: relative; overflow: hidden; }
+    .pdp h4 { font-size: 17px; }
+    .stars { display: flex; gap: 2px; color: var(--amber); margin-top: 6px; align-items: center; }
+    .stars .ico { fill: currentColor; stroke: none; width: 13px; height: 13px; }
+    .stars em { font-style: normal; font-size: 11.5px; color: var(--muted); margin-left: 6px; }
+    .timer { margin-top: 12px; background: #FFF1F0; color: #C0271D; border-radius: 10px; padding: 8px 10px; font-size: 11.5px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+    .timer code { font-family: inherit; background: #C0271D; color: #fff; padding: 2px 7px; border-radius: 6px; letter-spacing: .04em; }
+    .price-big { font-size: 22px; font-weight: 800; margin-top: 10px; }
+    .price-big s { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+    .pix-line { font-size: 12px; color: var(--green); font-weight: 700; }
+    .sizes { display: flex; gap: 6px; margin-top: 12px; }
+    .sizes span { width: 34px; height: 30px; border-radius: 8px; border: 1px solid var(--line); display: grid; place-items: center; font-size: 11.5px; font-weight: 700; }
+    .sizes .on { border-color: var(--ink); background: var(--ink); color: #fff; }
+    .sizes .off { color: #B8C0CE; text-decoration: line-through; }
+    .buy { margin-top: 12px; height: 38px; border-radius: 10px; background: var(--blue); color: #fff; font-size: 12.5px; font-weight: 700; display: grid; place-items: center; }
+    .waitlist { margin-top: 8px; font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .match { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line); }
+    .match small { font-size: 11.5px; font-weight: 800; color: var(--ink-2); }
+    .match-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+    .match-row div { aspect-ratio: 1; border-radius: 10px; }
+
+    /* Checkout mock */
+    .pay-opts { display: grid; gap: 10px; }
+    .pay { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; font-size: 13.5px; font-weight: 700; }
+    .pay .ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; }
+    .pay small { display: block; font-weight: 500; color: var(--muted); font-size: 11.5px; }
+    .pay .radio { margin-left: auto; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #CBD3E1; }
+    .pay.on { border-color: var(--blue); background: #F7F9FF; box-shadow: 0 0 0 3px rgba(47,91,255,.1); }
+    .pay.on .radio { border: 5px solid var(--blue); }
+    .ship { margin-top: 16px; border-radius: 12px; background: var(--bg-soft); padding: 12px 14px; display: grid; gap: 8px; font-size: 12.5px; }
+    .ship div { display: flex; justify-content: space-between; }
+    .ship div span:last-child { font-weight: 700; }
+    .coupon-ok { margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: var(--green); background: var(--green-50); border-radius: 10px; padding: 9px 12px; }
+    .total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); font-weight: 800; }
+    .total span:last-child { font-size: 20px; }
+
+    /* Chat mock */
+    .chat { display: grid; gap: 10px; font-size: 13.5px; }
+    .msg { max-width: 82%; padding: 10px 14px; border-radius: 16px; line-height: 1.45; }
+    .msg.me { justify-self: end; background: var(--blue); color: #fff; border-bottom-right-radius: 5px; }
+    .msg.ai { background: var(--bg-soft); border-bottom-left-radius: 5px; }
+    .msg.ai b { color: var(--ink); }
+    .chat-head { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .chat-head .av { width: 36px; height: 36px; border-radius: 50%; background: var(--grad); display: grid; place-items: center; color: #fff; }
+    .chat-head b { font-size: 14px; display: block; }
+    .chat-head span { font-size: 11.5px; color: var(--green); font-weight: 600; display: flex; align-items: center; gap: 5px; }
+    .chat-head span::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .wa-handoff { margin-top: 6px; display: flex; align-items: center; gap: 8px; justify-content: center; font-size: 12px; font-weight: 700; color: #128C4A; border: 1px dashed #9ADBB8; border-radius: 10px; padding: 9px; }
+
+    /* Kanban mock */
+    .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .col { background: var(--bg-soft); border-radius: 14px; padding: 10px; }
+    .col h5 { margin: 0 0 10px; font-size: 11.5px; font-weight: 800; color: var(--ink-2); display: flex; justify-content: space-between; }
+    .col h5 em { font-style: normal; color: var(--muted); }
+    .order { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; font-size: 11px; margin-bottom: 8px; }
+    .order b { font-size: 11.5px; display: block; }
+    .order .badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .bd { font-size: 9.5px; font-weight: 700; padding: 2px 6px; border-radius: 5px; display: inline-flex; align-items: center; gap: 3px; }
+    .bd.g { background: var(--green-50); color: #0A8A50; }
+    .bd.b { background: var(--blue-50); color: var(--blue); }
+    .bd.a { background: var(--amber-50); color: #9A5B00; }
+    .ops-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .ops-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; gap: 10px; align-items: center; font-size: 12px; }
+    .ops-card .ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; flex-shrink: 0; }
+    .ops-card b { display: block; font-size: 12.5px; }
+    .ops-card span { color: var(--muted); font-size: 11px; }
+
+    /* Dashboard mock */
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .kpi { border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+    .kpi small { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .kpi b { display: block; font-size: 17px; margin-top: 2px; letter-spacing: -0.02em; }
+    .kpi .up { font-size: 10.5px; font-weight: 700; color: var(--green); }
+    .goal { margin-top: 12px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-size: 12px; }
+    .goal .bar { height: 8px; border-radius: 99px; background: var(--bg-soft); margin-top: 8px; overflow: hidden; }
+    .goal .bar i { display: block; height: 100%; width: 72%; background: var(--grad); border-radius: 99px; }
+    .goal div:first-child { display: flex; justify-content: space-between; font-weight: 700; }
+    .waterfall { margin-top: 12px; border: 1px solid var(--line); border-radius: 12px; padding: 14px 12px 10px; }
+    .waterfall small { font-size: 11.5px; font-weight: 800; }
+    .wf { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; height: 130px; align-items: end; margin-top: 10px; position: relative; }
+    .wf div { position: relative; height: 100%; }
+    .wf i { position: absolute; left: 0; right: 0; border-radius: 6px; }
+    .wf span { position: absolute; bottom: -18px; left: 0; right: 0; text-align: center; font-size: 9.5px; color: var(--muted); font-weight: 600; }
+    .wf-labels { height: 16px; }
+
+    /* Marketing grid */
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; transition: transform .25s ease, box-shadow .25s ease, border-color .25s; }
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: #D7DEEB; }
+    .card .ic { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; margin-bottom: 18px; }
+    .card h3 { font-size: 18px; font-weight: 800; }
+    .card p { font-size: 15px; color: var(--muted); margin-top: 8px; }
+
+    /* All features */
+    .all { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .group { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+    .group h3 { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .group h3 .ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--blue-50); color: var(--blue); }
+    .group li { display: flex; gap: 9px; font-size: 14.5px; color: var(--ink-2); padding: 5px 0; }
+    .group li .ico { color: var(--green); margin-top: 4px; }
+
+    /* Brand */
+    .brand-box { background: var(--ink); color: #fff; border-radius: 28px; padding: 64px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; position: relative; overflow: hidden; }
+    .brand-box::after { content: ""; position: absolute; right: -120px; bottom: -160px; width: 460px; height: 460px; border-radius: 50%; background: radial-gradient(circle, rgba(47,91,255,.45), transparent 65%); pointer-events: none; }
+    .brand-box h2 { font-size: clamp(28px, 3.4vw, 40px); font-weight: 800; letter-spacing: -0.03em; }
+    .brand-box > div > p { color: #B8C2D6; font-size: 17px; margin-top: 16px; }
+    .brand-box ul { margin-top: 26px; display: grid; gap: 12px; }
+    .brand-box li { display: flex; gap: 10px; color: #DCE3F0; font-size: 15px; }
+    .brand-box li .ico { color: var(--cyan); margin-top: 3px; }
+    .swatches { position: relative; z-index: 1; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: 24px; }
+    .swatches small { font-size: 12px; font-weight: 700; color: #9AA6BE; letter-spacing: .06em; text-transform: uppercase; }
+    .sw-row { display: flex; gap: 12px; margin: 14px 0 22px; }
+    .sw-row i { width: 44px; height: 44px; border-radius: 12px; border: 2px solid rgba(255,255,255,.15); cursor: pointer; transition: transform .2s; }
+    .sw-row i.on { border-color: #fff; transform: scale(1.08); }
+    .preview-btns { display: grid; gap: 10px; }
+    .preview-btns span { height: 46px; border-radius: 12px; display: grid; place-items: center; font-weight: 700; font-size: 14px; transition: background .3s, color .3s, border-color .3s; }
+    .pv-primary { background: var(--pv, #2F5BFF); color: #fff; }
+    .pv-outline { border: 2px solid var(--pv, #2F5BFF); color: #fff; }
+    .pv-mail { margin-top: 14px; background: #fff; color: var(--ink); border-radius: 12px; padding: 14px; font-size: 12.5px; }
+    .pv-mail b { color: var(--pv, #2F5BFF); transition: color .3s; }
+
+    /* Steps */
+    .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; counter-reset: s; }
+    .how li { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; position: relative; }
+    .how li::before { counter-increment: s; content: counter(s, decimal-leading-zero); font-size: 14px; font-weight: 800; color: var(--blue); background: var(--blue-50); border-radius: 10px; padding: 6px 10px; display: inline-block; margin-bottom: 18px; }
+    .how h3 { font-size: 19px; font-weight: 800; }
+    .how p { font-size: 15px; color: var(--muted); margin-top: 8px; }
+
+    /* FAQ */
+    .faq { max-width: 820px; margin: 0 auto; display: grid; gap: 12px; }
+    .faq details { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 0 22px; transition: box-shadow .2s; }
+    .faq details[open] { box-shadow: var(--shadow); }
+    .faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; font-weight: 700; font-size: 16.5px; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary .ico { transition: transform .25s; color: var(--blue); }
+    .faq details[open] summary .ico { transform: rotate(45deg); }
+    .faq details p { padding: 0 0 22px; color: var(--ink-2); font-size: 15.5px; }
+
+    /* CTA */
+    .cta { padding: 40px 0 96px; }
+    .cta-box { border-radius: 28px; background: var(--grad); color: #fff; text-align: center; padding: 72px 28px; position: relative; overflow: hidden; }
+    .cta-box::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 20% 0%, rgba(255,255,255,.25), transparent 45%); }
+    .cta-box > * { position: relative; }
+    .cta-box h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 800; letter-spacing: -0.03em; max-width: 760px; margin: 0 auto; }
+    .cta-box p { font-size: 18px; opacity: .92; margin: 16px auto 0; max-width: 560px; }
+    .cta-box .hero-ctas { justify-content: center; }
+    .btn-outline-w { border: 1.5px solid rgba(255,255,255,.6); color: #fff; }
+    .btn-outline-w:hover { background: rgba(255,255,255,.1); }
+
+    footer { border-top: 1px solid var(--line); padding: 36px 0; }
+    footer .wrap { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+    footer .links { display: flex; gap: 20px; align-items: center; }
+    footer .links a { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--ink-2); }
+    footer .links a:hover { color: var(--blue); }
+
+    .wa-float { position: fixed; right: 20px; bottom: 20px; z-index: 60; width: 58px; height: 58px; border-radius: 50%; background: #25D366; color: #fff; display: grid; place-items: center; box-shadow: 0 12px 28px -8px rgba(37,211,102,.7); transition: transform .2s; }
+    .wa-float:hover { transform: scale(1.06); }
+    .wa-float svg { width: 30px; height: 30px; fill: currentColor; }
+
+    /* Reveal */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .float { animation: none; }
+      html { scroll-behavior: auto; }
+    }
+
+    /* Responsive */
+    @media (max-width: 1080px) {
+      .f-1 { left: -10px; } .f-2 { right: -10px; } .f-3 { left: 0; }
+    }
+    @media (max-width: 960px) {
+      .nav, .header .btn-desk { display: none; }
+      .menu-btn { display: inline-flex; }
+      .hero { padding-top: 48px; }
+      .hero-grid, .split, .brand-box { grid-template-columns: 1fr; gap: 44px; }
+      .split.rev .copy { order: 0; }
+      .split + .split { margin-top: 88px; }
+      .stage { min-height: 0; max-width: 560px; margin: 0 auto; width: 100%; }
+      .flow { grid-template-columns: 1fr; gap: 22px; max-width: 460px; margin: 0 auto; }
+      .flow::before { top: 10px; bottom: 10px; left: 33px; right: auto; width: 2px; height: auto; background: repeating-linear-gradient(180deg, #C9D3EA 0 6px, transparent 6px 12px); }
+      .step { display: grid; grid-template-columns: 68px 1fr; gap: 18px; text-align: left; align-items: center; padding: 0; }
+      .step .bubble { margin: 0; }
+      .step p { margin-top: 2px; }
+      .flow-note { border-radius: 18px; }
+      .cards, .all { grid-template-columns: 1fr 1fr; }
+      .how { grid-template-columns: 1fr; }
+      .brand-box { padding: 44px 28px; }
+      .sec { padding: 76px 0; }
+    }
+    @media (max-width: 620px) {
+      .wrap { padding: 0 16px; }
+      .hero h1 { font-size: 36px; }
+      .hero .lead { font-size: 17px; }
+      .hero-ctas .btn { width: 100%; }
+      .float { display: none; }
+      .products { grid-template-columns: repeat(2, 1fr); }
+      .products .p-card:nth-child(3) { display: none; }
+      .cards, .all { grid-template-columns: 1fr; }
+      .pdp { grid-template-columns: 1fr; }
+      .pdp .ph { aspect-ratio: 16/10; }
+      .kanban { grid-template-columns: 1fr 1fr; }
+      .kanban .col:nth-child(3) { display: none; }
+      .kpis { grid-template-columns: 1fr 1fr; }
+      .kpis .kpi:nth-child(3) { display: none; }
+      .ops-row { grid-template-columns: 1fr; }
+      .panel { padding: 16px; }
+      .sec-head { margin-bottom: 40px; }
+      .sec-head p, .split .copy > p { font-size: 16.5px; }
+      .cta-box { padding: 52px 20px; border-radius: 22px; }
+      .brand-box { padding: 36px 20px; border-radius: 22px; }
+      footer .wrap { flex-direction: column; text-align: center; }
+    }
   </style>
 </head>
-<body class="min-h-screen bg-white">
+<body>
 
-  <!-- Nav -->
-  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-xl bg-blue-500 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        </div>
-        <span class="font-black text-gray-900 text-lg">VirtualStore</span>
-      </div>
-      <nav class="hidden md:flex items-center gap-8 text-sm text-gray-600">
-        <a href="#funcionalidades" class="hover:text-gray-900 transition-colors">Funcionalidades</a>
-        <a href="#loja" class="hover:text-gray-900 transition-colors">Loja virtual</a>
-        <a href="#relatorios" class="hover:text-gray-900 transition-colors">Relatórios</a>
-        <a href="#integracoes" class="hover:text-gray-900 transition-colors">Integrações</a>
+  <!-- Ícones (Lucide, MIT) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-bag" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></symbol>
+      <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+      <symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol>
+      <symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+      <symbol id="i-card" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol>
+      <symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol>
+      <symbol id="i-msg" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+      <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+      <symbol id="i-kanban" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></symbol>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+      <symbol id="i-trend" viewBox="0 0 24 24"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/></symbol>
+      <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+      <symbol id="i-pix" viewBox="0 0 24 24"><path d="M12 2 2 12l10 10 10-10Z"/><path d="m7 12 5-5 5 5-5 5Z"/></symbol>
+      <symbol id="i-insta" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></symbol>
+      <symbol id="i-store" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- Header -->
+  <header class="header" id="top">
+    <div class="wrap">
+      <a href="#top" class="logo" aria-label="VirtualStore by BudStack">
+        <span class="logo-mark"><svg class="ico sm"><use href="#i-bag"/></svg></span>
+        <span>VirtualStore<small>by BudStack</small></span>
+      </a>
+      <nav class="nav" aria-label="Principal">
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#recursos">Recursos</a>
+        <a href="#ia">Atendimento IA</a>
+        <a href="#gestao">Gestão</a>
+        <a href="#faq">Dúvidas</a>
       </nav>
-      <div class="hidden md:flex items-center gap-3">
-        <a href="https://www.instagram.com/budstack.tech" target="_blank" rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-          @budstack.tech
-        </a>
-        <a href="https://wa.me/5519981687551" target="_blank" rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
-          Falar com desenvolvedor
-        </a>
-      </div>
+      <a class="btn btn-primary btn-sm btn-desk" data-wa="Olá! Vi a landing page da VirtualStore e quero saber mais sobre a loja virtual." href="#">Quero minha loja</a>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menu" aria-expanded="false"><svg class="ico"><use href="#i-menu"/></svg></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#recursos">Recursos</a>
+      <a href="#ia">Atendimento IA</a>
+      <a href="#gestao">Gestão</a>
+      <a href="#faq">Dúvidas</a>
+      <a class="btn btn-primary" data-wa="Olá! Vi a landing page da VirtualStore e quero saber mais sobre a loja virtual." href="#">Quero minha loja</a>
     </div>
   </header>
 
-  <!-- Hero -->
-  <section class="relative overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white">
-    <div class="absolute inset-0 pointer-events-none">
-      <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl"></div>
-    </div>
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-36 text-center">
-      <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium px-4 py-1.5 rounded-full mb-8">
-        <span class="w-1.5 h-1.5 bg-blue-400 rounded-full pulse-dot"></span>
-        Plataforma completa de vendas online
-      </div>
-      <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
-        Sua loja virtual,
-        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-400">
-          do zero ao lucro
-        </span>
-      </h1>
-      <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-        Plataforma completa com gestão de produtos, pedidos, clientes, relatórios de margem de lucro, integração com WhatsApp e Mercado Pago — tudo em um só lugar.
-      </p>
-      <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="https://wa.me/5519981687551" target="_blank" rel="noopener noreferrer"
-          class="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-2xl transition-colors text-base">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Quero minha loja
-        </a>
-        <a href="#funcionalidades"
-          class="inline-flex items-center gap-2 border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-semibold px-8 py-4 rounded-2xl transition-colors text-base">
-          Ver funcionalidades
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Dashboard Preview -->
-  <section class="bg-gradient-to-b from-gray-950 to-white pb-0 pt-0">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="relative -mt-8 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-        <div class="bg-gray-800 px-4 py-3 flex items-center gap-2">
-          <span class="w-3 h-3 rounded-full bg-red-400"></span>
-          <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-          <span class="w-3 h-3 rounded-full bg-green-400"></span>
-          <span class="ml-4 flex-1 bg-gray-700 rounded-md h-5 max-w-xs text-xs text-gray-400 flex items-center px-3">admin.sujaloja.com/dashboard</span>
-        </div>
-        <img
-          src="images/dashboard.png"
-          alt="Painel administrativo VirtualStore"
-          class="w-full block"
-          loading="lazy"
-        />
-      </div>
-    </div>
-  </section>
-
-  <!-- Stats strip -->
-  <section class="border-y border-gray-100 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-      <div><p class="text-3xl font-black text-gray-900 mb-1">13+</p><p class="text-sm text-gray-500">Módulos integrados</p></div>
-      <div><p class="text-3xl font-black text-gray-900 mb-1">100%</p><p class="text-sm text-gray-500">Responsivo mobile</p></div>
-      <div><p class="text-3xl font-black text-gray-900 mb-1">2</p><p class="text-sm text-gray-500">Formas de checkout</p></div>
-      <div><p class="text-3xl font-black text-gray-900 mb-1">∞</p><p class="text-sm text-gray-500">Produtos e pedidos</p></div>
-    </div>
-  </section>
-
-  <!-- Features grid -->
-  <section id="funcionalidades" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">Tudo que você precisa para vender</h2>
-      <p class="text-gray-500 text-lg max-w-xl mx-auto">Cada módulo foi pensado para simplificar a operação da sua loja e maximizar suas vendas.</p>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-      <!-- Gestão de Produtos -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-blue-50 text-blue-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Gestão de Produtos</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Cadastre produtos com variações de tamanho e cor, estoque individual por variação, múltiplas imagens, categoria, preço de destaque e controle de visibilidade.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Variações tamanho × cor</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Estoque por variação</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Validação de estoque no carrinho</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Produtos em destaque</li>
-        </ul>
-      </div>
-
-      <!-- Gestão de Pedidos -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-blue-50 text-blue-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Gestão de Pedidos</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Acompanhe cada pedido do recebimento à entrega com fluxo de status completo, código de rastreio e comprovante de envio.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Fluxo de status completo</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Código de rastreio</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Comprovante de envio</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cancelamento com restauração de estoque</li>
-        </ul>
-      </div>
-
-      <!-- Variações Personalizadas -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-violet-50 text-violet-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Variações Personalizadas</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Crie tipos de variação totalmente personalizados para sua loja — tamanhos, cores, materiais ou qualquer atributo.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Tipos de variação customizados</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Valores livres por tipo</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Reutilização em produtos</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Estoque por combinação</li>
-        </ul>
-      </div>
-
-      <!-- Relatórios & Analytics -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-purple-50 text-purple-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Relatórios & Analytics</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Tome decisões baseadas em dados com relatórios de faturamento, vendas por estado, por categoria e margem de lucro.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Faturamento mensal</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Vendas por estado</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Por categoria</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Margem de lucro</li>
-        </ul>
-      </div>
-
-      <!-- Margem de Lucro -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-emerald-50 text-emerald-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Margem de Lucro</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Cadastre o valor de custo de cada produto e acompanhe a margem de lucro real por produto vendido e por pedido.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Custo por produto</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Lucro por pedido</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>% de margem</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Alertas de margem negativa</li>
-        </ul>
-      </div>
-
-      <!-- Gestão de Clientes -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-orange-50 text-orange-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Gestão de Clientes</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Visualize todos os seus clientes, histórico de pedidos e informações de contato em um painel centralizado.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cadastro automático</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Histórico de pedidos</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dados de contato</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Endereço salvo</li>
-        </ul>
-      </div>
-
-      <!-- Avaliações -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-yellow-50 text-yellow-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Avaliações</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Sistema de reviews com moderação manual. Aprove ou reprove avaliações antes de exibi-las na vitrine.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Avaliação por estrelas</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Comentários</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Aprovação manual</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Exibição na vitrine</li>
-        </ul>
-      </div>
-
-      <!-- Lista de Espera -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-indigo-50 text-indigo-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Lista de Espera</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Capture o interesse de clientes em produtos esgotados. Notifique automaticamente quando o estoque for reposto.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Fila por variação</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Notificação por e-mail</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Controle de notificados</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Recuperação de vendas</li>
-        </ul>
-      </div>
-
-      <!-- Carrinhos Abandonados -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-red-50 text-red-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Carrinhos Abandonados</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Visualize e recupere vendas perdidas identificando clientes que não finalizaram a compra.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Identificação automática</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Lista de itens</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dados do cliente</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Ação de recuperação</li>
-        </ul>
-      </div>
-
-      <!-- Configurações -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-gray-100 text-gray-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Configurações da Loja</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Personalize sua loja com logo, cor da marca, informações de contato e integrações de pagamento.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Logo e identidade</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cor dos botões e menus</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>WhatsApp e Instagram</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mensagem personalizada</li>
-        </ul>
-      </div>
-
-      <!-- Mercado Pago -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-cyan-50 text-cyan-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Mercado Pago</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Ofereça pagamento online com Mercado Pago integrado. Aceite cartão, Pix e boleto sem sair da loja.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cartão de crédito</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Pix</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Boleto</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Checkout nativo</li>
-        </ul>
-      </div>
-
-      <!-- Checkout WhatsApp -->
-      <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-        <div class="inline-flex p-3 rounded-xl bg-green-50 text-green-600 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <h3 class="font-bold text-gray-900 text-lg mb-2">Checkout via WhatsApp</h3>
-        <p class="text-gray-500 text-sm leading-relaxed mb-4">Receba pedidos diretamente no WhatsApp com mensagem estruturada contendo todos os dados do cliente.</p>
-        <ul class="space-y-1.5">
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mensagem formatada</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Itens e valores</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dados do cliente</li>
-          <li class="flex items-center gap-2 text-xs text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Configuração simples</li>
-        </ul>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- Demo video section -->
-  <section class="py-24 bg-gray-950 text-white">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12">
-        <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">
-          Demo
-        </div>
-        <h2 class="text-3xl md:text-4xl font-black mb-4">Veja a plataforma em ação</h2>
-        <p class="text-gray-400 text-lg max-w-xl mx-auto">Uma demonstração real de como a VirtualStore funciona — do painel admin à vitrine do cliente.</p>
-      </div>
-      <div class="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-        <div class="bg-gray-800 px-4 py-3 flex items-center gap-2">
-          <span class="w-3 h-3 rounded-full bg-red-400"></span>
-          <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-          <span class="w-3 h-3 rounded-full bg-green-400"></span>
-          <span class="ml-4 flex-1 bg-gray-700 rounded-md h-5 max-w-xs text-xs text-gray-400 flex items-center px-3">demo.virtualstore.com.br</span>
-        </div>
-        <video autoplay muted loop playsinline controls class="w-full block">
-          <source src="videos/demo.webm" type="video/webm" />
-          <source src="videos/demo.mp4" type="video/mp4" />
-        </video>
-      </div>
-    </div>
-  </section>
-
-  <!-- Admin panel highlight -->
-  <section class="bg-gray-950 text-white py-24">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid md:grid-cols-2 gap-16 items-center">
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="wrap hero-grid">
         <div>
-          <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">
-            Painel administrativo
+          <span class="eyebrow"><b>Novo</b> Atendimento com IA + nota fiscal automática</span>
+          <h1>Sua loja de moda <span class="grad-text">vendendo sozinha</span>, do clique à entrega.</h1>
+          <p class="lead">Uma loja virtual com a sua marca que recebe o pagamento, emite a nota, gera a etiqueta, avisa o cliente e mostra o seu lucro real. Você cuida das peças, a plataforma cuida do resto.</p>
+          <div class="hero-ctas">
+            <a class="btn btn-primary" data-wa="Olá! Quero uma loja virtual como a VirtualStore para o meu negócio." href="#">Quero minha loja <svg class="ico sm"><use href="#i-arrow"/></svg></a>
+            <a class="btn btn-ghost" href="#recursos">Ver o que está incluso</a>
           </div>
-          <h2 class="text-3xl md:text-4xl font-black mb-6 leading-tight">Controle total da sua operação</h2>
-          <p class="text-gray-400 leading-relaxed mb-8">O painel admin reúne todos os módulos em uma interface limpa e intuitiva. Gerencie produtos, pedidos, clientes e configurações sem precisar de conhecimento técnico.</p>
-          <div class="space-y-4">
-            <div class="flex gap-3">
-              <div class="mt-1 w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              </div>
-              <div><p class="font-semibold text-sm text-white">Produtos com variações</p><p class="text-gray-400 text-xs mt-0.5">Cadastre tamanhos, cores e estoque individual por combinação</p></div>
+          <div class="hero-checks">
+            <span><svg class="ico sm"><use href="#i-check"/></svg>Pix e cartão sem sair da loja</span>
+            <span><svg class="ico sm"><use href="#i-check"/></svg>NF-e e etiqueta automáticas</span>
+            <span><svg class="ico sm"><use href="#i-check"/></svg>Sem precisar programar</span>
+          </div>
+        </div>
+
+        <div class="stage reveal" aria-hidden="true">
+          <div class="browser">
+            <div class="browser-bar"><i></i><i></i><i></i><span class="url">suamarca.com.br</span></div>
+            <div class="promo-strip">5% OFF NO PIX · ENVIAMOS PARA TODO O BRASIL</div>
+            <div class="shop-top"><span>SUA MARCA</span><span class="pill">Nova coleção</span></div>
+            <div class="shop-hero">
+              <small>COLEÇÃO VERÃO</small>
+              <h4>Leveza para todos os dias</h4>
+              <span class="mini-btn">Comprar agora</span>
             </div>
-            <div class="flex gap-3">
-              <div class="mt-1 w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              </div>
-              <div><p class="font-semibold text-sm text-white">Fluxo completo de pedidos</p><p class="text-gray-400 text-xs mt-0.5">De pendente a entregue, com rastreio e comprovante de envio</p></div>
+            <div class="products">
+              <div class="p-card"><div class="ph ph-1"><span class="tag">-20%</span><span class="heart"><svg class="ico xs"><use href="#i-heart"/></svg></span><span class="garment"></span></div><div class="nm">Camisa Linho</div><div class="pr">R$ 159,90<s>R$ 199,90</s></div></div>
+              <div class="p-card"><div class="ph ph-2"><span class="heart"><svg class="ico xs"><use href="#i-heart"/></svg></span><span class="garment"></span></div><div class="nm">Vestido Midi</div><div class="pr">R$ 229,90</div></div>
+              <div class="p-card"><div class="ph ph-3"><span class="heart"><svg class="ico xs"><use href="#i-heart"/></svg></span><span class="garment"></span></div><div class="nm">Blusa Tricô</div><div class="pr">R$ 139,90</div></div>
             </div>
-            <div class="flex gap-3">
-              <div class="mt-1 w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="float f-1"><span class="ic ic-green"><svg class="ico"><use href="#i-pix"/></svg></span><div><b>Pedido pago no Pix</b><span>#1042 · R$ 289,90</span></div></div>
+          <div class="float f-2"><span class="ic ic-blue"><svg class="ico"><use href="#i-file"/></svg></span><div><b>NF-e autorizada</b><span>DANFE enviada ao cliente</span></div></div>
+          <div class="float f-3"><span class="ic ic-violet"><svg class="ico"><use href="#i-printer"/></svg></span><div><b>Etiqueta pronta</b><span>Rastreio gerado</span></div></div>
+        </div>
+      </div>
+
+      <div class="wrap strip">
+        <p>Integrado com quem você já usa</p>
+        <ul>
+          <li>Mercado Pago</li><li>Pix</li><li>NuPay</li><li>InfinitePay</li><li>Melhor Envio</li><li>Correios</li><li>Bling</li><li>Meta Ads</li><li>Google</li><li>WhatsApp</li><li>IA Claude</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Fluxo -->
+    <section class="sec soft" id="como-funciona">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="kicker">Do clique à entrega</span>
+          <h2>Cada venda segue sozinha, sem planilha e sem copiar e colar</h2>
+          <p>O que antes tomava horas do seu dia agora acontece automaticamente a cada pedido.</p>
+        </div>
+        <div class="flow reveal">
+          <div class="step"><div class="bubble"><svg class="ico"><use href="#i-cart"/></svg><span class="n">1</span></div><div><h3>Cliente compra</h3><p>Pix, cartão, NuPay ou WhatsApp, com frete pelo CEP.</p></div></div>
+          <div class="step"><div class="bubble"><svg class="ico"><use href="#i-shield"/></svg><span class="n">2</span></div><div><h3>Pagamento confirmado</h3><p>Pedido entra na esteira e o estoque é baixado.</p></div></div>
+          <div class="step"><div class="bubble"><svg class="ico"><use href="#i-file"/></svg><span class="n">3</span></div><div><h3>Nota fiscal emitida</h3><p>NF-e via Bling e SEFAZ, com DANFE e XML por e-mail.</p></div></div>
+          <div class="step"><div class="bubble"><svg class="ico"><use href="#i-printer"/></svg><span class="n">4</span></div><div><h3>Etiqueta gerada</h3><p>Paga e gerada no Melhor Envio, pronta para imprimir.</p></div></div>
+          <div class="step"><div class="bubble"><svg class="ico"><use href="#i-truck"/></svg><span class="n">5</span></div><div><h3>Cliente acompanha</h3><p>Rastreio atualizado e e-mail a cada etapa.</p></div></div>
+        </div>
+        <p class="flow-note reveal">Você só <b>embala e despacha</b>. O resto já foi feito.</p>
+      </div>
+    </section>
+
+    <!-- Recursos: Vitrine / Checkout -->
+    <section class="sec" id="recursos">
+      <div class="wrap">
+        <div class="split">
+          <div class="copy reveal">
+            <span class="kicker">Vitrine que converte</span>
+            <h2>Uma loja bonita que faz o cliente comprar mais</h2>
+            <p>Feita para moda e pensada para o celular, onde está a maior parte dos seus clientes. Tudo que ajuda a decidir e a voltar está ali.</p>
+            <ul class="feat-list">
+              <li><span class="ic"><svg class="ico"><use href="#i-zap"/></svg></span><div><b>Promoção relâmpago com cronômetro</b><span>Preço "de/por" e contagem regressiva que criam urgência de verdade.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-spark"/></svg></span><div><b>"Combina com" e vistos recentemente</b><span>Sugestões na página do produto e no carrinho aumentam o ticket médio.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-bell"/></svg></span><div><b>Avise-me quando chegar</b><span>Tamanho esgotado vira lista de espera, e o cliente é avisado na reposição.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-star"/></svg></span><div><b>Avaliações, favoritos e login com Google</b><span>Prova social, lista de desejos e cadastro em um clique.</span></div></li>
+            </ul>
+          </div>
+          <div class="panel reveal" aria-hidden="true">
+            <div class="pdp">
+              <div class="ph ph-2"><span class="garment"></span></div>
+              <div>
+                <h4>Vestido Midi Fluido</h4>
+                <div class="stars"><svg class="ico"><use href="#i-star"/></svg><svg class="ico"><use href="#i-star"/></svg><svg class="ico"><use href="#i-star"/></svg><svg class="ico"><use href="#i-star"/></svg><svg class="ico"><use href="#i-star"/></svg><em>48 avaliações</em></div>
+                <div class="timer"><span>Oferta termina em</span><code id="countdown">02:14:37</code></div>
+                <div class="price-big">R$ 183,90<s>R$ 229,90</s></div>
+                <div class="pix-line">R$ 174,70 no Pix · ou 6x no cartão</div>
+                <div class="sizes"><span>P</span><span class="on">M</span><span>G</span><span class="off">GG</span></div>
+                <div class="buy">Adicionar ao carrinho</div>
+                <div class="waitlist"><svg class="ico xs"><use href="#i-bell"/></svg>GG esgotado · avise-me quando chegar</div>
               </div>
-              <div><p class="font-semibold text-sm text-white">Relatórios em tempo real</p><p class="text-gray-400 text-xs mt-0.5">Faturamento, ticket médio, cancelamentos e margem de lucro</p></div>
             </div>
-            <div class="flex gap-3">
-              <div class="mt-1 w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f9a8d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              </div>
-              <div><p class="font-semibold text-sm text-white">Configuração sem código</p><p class="text-gray-400 text-xs mt-0.5">Personalize cores, logo e integrações pelo próprio painel</p></div>
+            <div class="match">
+              <small>Combina com</small>
+              <div class="match-row"><div class="ph-1"></div><div class="ph-3"></div><div class="ph-2"></div><div class="ph-1"></div></div>
             </div>
           </div>
         </div>
-        <div class="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-          <div class="bg-gray-800 px-4 py-3 flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-red-400"></span>
-            <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-            <span class="w-3 h-3 rounded-full bg-green-400"></span>
-            <span class="ml-4 flex-1 bg-gray-700 rounded-md h-5 max-w-xs text-xs text-gray-400 flex items-center px-3">admin.sujaloja.com/clientes</span>
+
+        <div class="split rev">
+          <div class="copy reveal">
+            <span class="kicker">Checkout sem atrito</span>
+            <h2>O cliente paga do jeito que preferir, sem sair da sua loja</h2>
+            <p>Menos etapas e menos redirecionamentos significam menos desistências. O frete é calculado na hora pelo CEP.</p>
+            <ul class="feat-list">
+              <li><span class="ic"><svg class="ico"><use href="#i-pix"/></svg></span><div><b>Pix com desconto e cartão parcelado</b><span>Checkout transparente do Mercado Pago, além de NuPay, InfinitePay e pedido pelo WhatsApp.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-truck"/></svg></span><div><b>Frete do seu jeito</b><span>Melhor Envio, Correios, entrega local, frete fixo, híbrido ou retirada na loja, com prazo de produção somado.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-tag"/></svg></span><div><b>Cupons inteligentes</b><span>Primeira compra, frete grátis, por cliente, por produto, com limite de uso e até por link.</span></div></li>
+            </ul>
           </div>
-          <img
-            src="images/clientes.png"
-            alt="Gestao de clientes VirtualStore"
-            class="w-full block"
-            loading="lazy"
-          />
+          <div class="panel reveal" aria-hidden="true">
+            <div class="panel-title">Pagamento <span class="chip">Compra segura</span></div>
+            <div class="pay-opts">
+              <div class="pay on"><span class="ic ic-green"><svg class="ico sm"><use href="#i-pix"/></svg></span><div>Pix<small>5% de desconto · aprovação na hora</small></div><span class="radio"></span></div>
+              <div class="pay"><span class="ic ic-blue"><svg class="ico sm"><use href="#i-card"/></svg></span><div>Cartão de crédito<small>Em até 6x, direto na loja</small></div><span class="radio"></span></div>
+              <div class="pay"><span class="ic ic-violet"><svg class="ico sm"><use href="#i-phone"/></svg></span><div>NuPay<small>Pague pelo app do Nubank</small></div><span class="radio"></span></div>
+            </div>
+            <div class="ship">
+              <div><span>PAC · 6 dias úteis</span><span>R$ 21,40</span></div>
+              <div><span>SEDEX · 2 dias úteis</span><span>R$ 34,90</span></div>
+            </div>
+            <div class="coupon-ok"><svg class="ico sm"><use href="#i-check"/></svg>Cupom BEMVINDA10 aplicado · −R$ 18,39</div>
+            <div class="total"><span>Total</span><span>R$ 177,71</span></div>
+          </div>
         </div>
+      </div>
+    </section>
+
+    <!-- IA -->
+    <section class="sec soft" id="ia">
+      <div class="wrap">
+        <div class="split">
+          <div class="copy reveal">
+            <span class="kicker">Atendimento com IA 24h</span>
+            <h2>Uma vendedora que responde na hora, até de madrugada</h2>
+            <p>A assistente conhece seu catálogo, suas políticas e os pedidos de cada cliente. Ela responde as dúvidas que travam a venda e passa para o seu WhatsApp quando precisa de você.</p>
+            <ul class="feat-list">
+              <li><span class="ic"><svg class="ico"><use href="#i-search"/></svg></span><div><b>Consulta estoque por tamanho e cor</b><span>"Tem o vestido no M?" A resposta sai na hora, com o preço promocional.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-box"/></svg></span><div><b>Responde onde está o pedido</b><span>Mostra status e rastreio apenas para o cliente dono do pedido.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-msg"/></svg></span><div><b>Passa para o WhatsApp com o resumo</b><span>Você recebe a conversa resumida, sem pedir para o cliente repetir.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-chart"/></svg></span><div><b>Mostra o que seus clientes perguntam</b><span>Veja os temas mais comuns e o que ela não soube responder, para melhorar suas políticas.</span></div></li>
+            </ul>
+          </div>
+          <div class="panel reveal" aria-hidden="true">
+            <div class="chat-head"><span class="av"><svg class="ico sm"><use href="#i-bot"/></svg></span><div><b>Assistente da loja</b><span>Online agora</span></div></div>
+            <div class="chat">
+              <div class="msg me">Oi! Tem o vestido midi azul no tamanho M?</div>
+              <div class="msg ai">Tem sim! O <b>Vestido Midi Fluido</b> azul no M está disponível por <b>R$ 183,90</b> (promoção até hoje) ou R$ 174,70 no Pix.</div>
+              <div class="msg me">E meu pedido da semana passada, já saiu?</div>
+              <div class="msg ai">Seu pedido <b>#1038</b> foi enviado ontem pelos Correios e chega em até 4 dias úteis. O rastreio é QB123456789BR.</div>
+              <div class="wa-handoff"><svg class="ico sm"><use href="#i-msg"/></svg>Falar com a loja no WhatsApp</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Operação -->
+    <section class="sec" id="operacao">
+      <div class="wrap">
+        <div class="split rev">
+          <div class="copy reveal">
+            <span class="kicker">Operação no automático</span>
+            <h2>Pedidos organizados, nota emitida e etiqueta pronta</h2>
+            <p>Uma esteira visual mostra o que precisa ser feito agora. Cada etapa chata já vem resolvida, e o painel avisa se algo precisa da sua atenção.</p>
+            <ul class="feat-list">
+              <li><span class="ic"><svg class="ico"><use href="#i-kanban"/></svg></span><div><b>Esteira de pedidos</b><span>Do "aguardando pagamento" ao "concluído", com contadores de pendências no menu.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-file"/></svg></span><div><b>NF-e automática pelo Bling</b><span>Emitida, enviada à SEFAZ e mandada ao cliente com DANFE e XML. Se for rejeitada, você vê o motivo.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-printer"/></svg></span><div><b>Etiqueta sem abrir o Melhor Envio</b><span>Paga com seu saldo, gera o rastreio e salva o PDF para a impressora térmica.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-undo"/></svg></span><div><b>Trocas e devoluções</b><span>O cliente solicita pela conta dele, você aprova e o estorno entra no relatório.</span></div></li>
+            </ul>
+          </div>
+          <div class="panel reveal" aria-hidden="true">
+            <div class="panel-title">Esteira de pedidos <span class="chip">Hoje</span></div>
+            <div class="kanban">
+              <div class="col"><h5>Aguardando <em>3</em></h5>
+                <div class="order"><b>#1046 · Ana P.</b>R$ 139,90<div class="badges"><span class="bd a">Pix pendente</span></div></div>
+                <div class="order"><b>#1045 · Júlia M.</b>R$ 412,80<div class="badges"><span class="bd a">Cartão</span></div></div>
+              </div>
+              <div class="col"><h5>Separar e enviar <em>4</em></h5>
+                <div class="order"><b>#1042 · Carla S.</b>R$ 289,90<div class="badges"><span class="bd g">NF-e ✓</span><span class="bd b">Etiqueta ✓</span></div></div>
+                <div class="order"><b>#1041 · Bruna L.</b>R$ 183,90<div class="badges"><span class="bd g">NF-e ✓</span><span class="bd b">Etiqueta ✓</span></div></div>
+              </div>
+              <div class="col"><h5>Enviado <em>12</em></h5>
+                <div class="order"><b>#1036 · Paula R.</b>Em trânsito<div class="badges"><span class="bd b">Correios</span></div></div>
+                <div class="order"><b>#1033 · Lívia T.</b>Saiu p/ entrega<div class="badges"><span class="bd b">Loggi</span></div></div>
+              </div>
+            </div>
+            <div class="ops-row">
+              <div class="ops-card"><span class="ic ic-blue"><svg class="ico sm"><use href="#i-printer"/></svg></span><div><b>4 etiquetas prontas</b><span>Imprimir todas de uma vez</span></div></div>
+              <div class="ops-card"><span class="ic ic-green"><svg class="ico sm"><use href="#i-mail"/></svg></span><div><b>Clientes avisados</b><span>E-mail de envio e rastreio</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gestão -->
+    <section class="sec soft" id="gestao">
+      <div class="wrap">
+        <div class="split">
+          <div class="copy reveal">
+            <span class="kicker">Gestão e lucro real</span>
+            <h2>Saiba quanto sobra de verdade em cada venda</h2>
+            <p>Faturamento é só metade da história. O painel desconta taxa do pagamento, custo das peças, frete, cupons e devoluções para mostrar o seu lucro líquido.</p>
+            <ul class="feat-list">
+              <li><span class="ic"><svg class="ico"><use href="#i-target"/></svg></span><div><b>Painel com meta do mês</b><span>Faturamento, pedidos, ticket médio e o quanto falta para bater a meta.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-trend"/></svg></span><div><b>Perdas que você não via</b><span>Cancelamentos, devoluções, pedidos com prejuízo e carrinhos não recuperados.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-box"/></svg></span><div><b>Produtos e clientes</b><span>Estoque parado, demanda sem estoque, recorrência e margem por produto.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-pin"/></svg></span><div><b>De onde vêm suas vendas</b><span>Por estado, canal, campanha e taxas por forma de pagamento.</span></div></li>
+            </ul>
+          </div>
+          <div class="panel reveal" aria-hidden="true">
+            <div class="panel-title">Visão geral <span class="chip">Últimos 30 dias</span></div>
+            <div class="kpis">
+              <div class="kpi"><small>Faturamento</small><b>R$ 48.290</b><span class="up">▲ 18%</span></div>
+              <div class="kpi"><small>Lucro líquido</small><b>R$ 14.870</b><span class="up">▲ 22%</span></div>
+              <div class="kpi"><small>Ticket médio</small><b>R$ 231</b><span class="up">▲ 6%</span></div>
+            </div>
+            <div class="goal"><div><span>Meta de novembro</span><span>72%</span></div><div class="bar"><i></i></div></div>
+            <div class="waterfall">
+              <small>Do faturamento ao lucro</small>
+              <div class="wf">
+                <div><i style="bottom:0;height:100%;background:var(--blue)"></i><span>Receita</span></div>
+                <div><i style="bottom:88%;height:12%;background:#F7A39C"></i><span>Cupons</span></div>
+                <div><i style="bottom:80%;height:8%;background:#F7A39C"></i><span>Taxas</span></div>
+                <div><i style="bottom:42%;height:38%;background:#F7A39C"></i><span>Peças</span></div>
+                <div><i style="bottom:31%;height:11%;background:#F7A39C"></i><span>Frete</span></div>
+                <div><i style="bottom:0;height:31%;background:var(--green)"></i><span>Lucro</span></div>
+              </div>
+              <div class="wf-labels"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Marketing -->
+    <section class="sec" id="marketing">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="kicker">Marketing que se paga</span>
+          <h2>Traga clientes e recupere as vendas que iam embora</h2>
+          <p>Ferramentas para anunciar melhor, vender de novo para quem já comprou e não deixar dinheiro na mesa.</p>
+        </div>
+        <div class="cards">
+          <div class="card reveal"><div class="ic ic-blue"><svg class="ico"><use href="#i-target"/></svg></div><h3>Meta Pixel + API de Conversões</h3><p>Anúncios do Instagram e Facebook otimizados com dados reais de compra, enviados também pelo servidor.</p></div>
+          <div class="card reveal"><div class="ic ic-violet"><svg class="ico"><use href="#i-pin"/></svg></div><h3>Origem de cada pedido</h3><p>Saiba se a venda veio do Instagram, Google, de uma campanha ou de um link seu, e invista onde funciona.</p></div>
+          <div class="card reveal"><div class="ic ic-amber"><svg class="ico"><use href="#i-cart"/></svg></div><h3>Carrinho abandonado</h3><p>Lembrete automático por e-mail e relatório de quantos carrinhos viraram venda depois.</p></div>
+          <div class="card reveal"><div class="ic ic-green"><svg class="ico"><use href="#i-tag"/></svg></div><h3>Cupons por link</h3><p>Mande um link com o cupom e ele já entra aplicado. A IA também pode divulgar os cupons que você liberar.</p></div>
+          <div class="card reveal"><div class="ic ic-blue"><svg class="ico"><use href="#i-zap"/></svg></div><h3>Promoções relâmpago</h3><p>Agende descontos com início e fim. O preço muda sozinho na vitrine e no checkout.</p></div>
+          <div class="card reveal"><div class="ic ic-violet"><svg class="ico"><use href="#i-search"/></svg></div><h3>Pronta para o Google</h3><p>SEO de produto, sitemap e dados estruturados para suas peças aparecerem nas buscas.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sua marca -->
+    <section class="sec" style="padding-top:0">
+      <div class="wrap">
+        <div class="brand-box reveal">
+          <div>
+            <span class="kicker" style="color:var(--cyan)">100% a sua marca</span>
+            <h2>Sua identidade em cada detalhe, sem escrever uma linha de código</h2>
+            <p>Logo, cores, banners, menu e textos são ajustados pelo painel. Até os e-mails enviados aos clientes saem com as cores da sua loja.</p>
+            <ul>
+              <li><svg class="ico sm"><use href="#i-check"/></svg>Cores de botões e destaques aplicadas na loja e nos e-mails</li>
+              <li><svg class="ico sm"><use href="#i-check"/></svg>Menu, categorias, variações e atributos do seu jeito</li>
+              <li><svg class="ico sm"><use href="#i-check"/></svg>Banner de cookies conforme a LGPD e pagamento protegido</li>
+            </ul>
+          </div>
+          <div class="swatches" id="swatches">
+            <small>Experimente: escolha a cor da sua marca</small>
+            <div class="sw-row" role="radiogroup" aria-label="Cor da marca">
+              <i class="on" style="background:#2F5BFF" data-c="#2F5BFF" role="radio" aria-checked="true" aria-label="Azul" tabindex="0"></i>
+              <i style="background:#111827" data-c="#111827" role="radio" aria-checked="false" aria-label="Preto" tabindex="0"></i>
+              <i style="background:#D9467A" data-c="#D9467A" role="radio" aria-checked="false" aria-label="Rosa" tabindex="0"></i>
+              <i style="background:#0E9F6E" data-c="#0E9F6E" role="radio" aria-checked="false" aria-label="Verde" tabindex="0"></i>
+              <i style="background:#B7791F" data-c="#B7791F" role="radio" aria-checked="false" aria-label="Caramelo" tabindex="0"></i>
+            </div>
+            <div class="preview-btns">
+              <span class="pv-primary">Comprar agora</span>
+              <span class="pv-outline">Adicionar aos favoritos</span>
+            </div>
+            <div class="pv-mail"><b>Seu pedido foi enviado!</b><br />Olá, Carla. Seu pedido #1042 já está a caminho. Acompanhe pelo código de rastreio.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tudo incluso -->
+    <section class="sec soft" id="incluso">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="kicker">Tudo incluso</span>
+          <h2>Uma plataforma completa, sem pagar por plugins</h2>
+          <p>Tudo o que uma loja de moda precisa para vender, entregar e crescer, num só lugar.</p>
+        </div>
+        <div class="all">
+          <div class="group reveal"><h3><span class="ic"><svg class="ico sm"><use href="#i-store"/></svg></span>Loja virtual</h3><ul>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Vitrine responsiva com banner e novidades</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Galeria de fotos e grade de tamanhos e cores</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Favoritos e vistos recentemente</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Área do cliente com pedidos, rastreio e nota</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Login com Google e cadastro rápido</li>
+          </ul></div>
+          <div class="group reveal"><h3><span class="ic"><svg class="ico sm"><use href="#i-card"/></svg></span>Vendas e pagamentos</h3><ul>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Pix e cartão transparentes (Mercado Pago)</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>NuPay, InfinitePay e pedido via WhatsApp</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Desconto automático no Pix</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Cupons e promoções relâmpago</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Recuperação de carrinho abandonado</li>
+          </ul></div>
+          <div class="group reveal"><h3><span class="ic"><svg class="ico sm"><use href="#i-sliders"/></svg></span>Catálogo</h3><ul>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Produtos com estoque por variação</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Variações e atributos personalizados</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Categorias e menu editáveis</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Avaliações com aprovação</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Lista de espera por tamanho e cor</li>
+          </ul></div>
+          <div class="group reveal"><h3><span class="ic"><svg class="ico sm"><use href="#i-truck"/></svg></span>Entregas</h3><ul>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Frete Melhor Envio, Correios, local, fixo ou híbrido</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Retirada na loja e restrição por região</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Etiquetas automáticas para impressora térmica</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Rastreamento com alertas de problemas</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Embalagens cadastradas para frete exato</li>
+          </ul></div>
+          <div class="group reveal"><h3><span class="ic"><svg class="ico sm"><use href="#i-file"/></svg></span>Fiscal e ERP</h3><ul>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Integração com o Bling</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>NF-e automática com status da SEFAZ</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>DANFE e XML por e-mail ao cliente</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Sincronização de produtos e clientes</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Trocas e devoluções com estorno</li>
+          </ul></div>
+          <div class="group reveal"><h3><span class="ic"><svg class="ico sm"><use href="#i-chart"/></svg></span>Gestão e inteligência</h3><ul>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Painel com meta do mês e pendências</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Lucro real, margem e perdas</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Vendas por estado, canal e campanha</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Atendimento com IA 24h e seus insights</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Meta Pixel e API de Conversões</li>
+          </ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Como começar -->
+    <section class="sec" id="comecar">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="kicker">Como começar</span>
+          <h2>Sua loja no ar em três passos</h2>
+          <p>Você não precisa entender de tecnologia. A gente cuida da parte técnica com você.</p>
+        </div>
+        <ol class="how" style="padding:0;margin:0;list-style:none">
+          <li class="reveal"><h3>Conversa rápida</h3><p>Entendemos sua marca, seus produtos e como você vende hoje.</p></li>
+          <li class="reveal"><h3>Loja configurada</h3><p>Montamos sua loja com logo, cores, pagamentos, frete e integrações.</p></li>
+          <li class="reveal"><h3>Comece a vender</h3><p>Cadastre suas peças, divulgue o link e acompanhe tudo pelo painel.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="sec soft" id="faq">
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="kicker">Dúvidas</span>
+          <h2>Perguntas frequentes</h2>
+        </div>
+        <div class="faq">
+          <details class="reveal"><summary>Preciso saber programar para usar?<svg class="ico"><use href="#i-plus"/></svg></summary><p>Não. Produtos, preços, fotos, cupons, promoções, frete, cores e textos são ajustados pelo painel administrativo, com telas simples e em português.</p></details>
+          <details class="reveal"><summary>A loja funciona bem no celular?<svg class="ico"><use href="#i-plus"/></svg></summary><p>Sim. A vitrine, o checkout e o painel foram pensados primeiro para o celular, onde acontece a maior parte das compras de moda.</p></details>
+          <details class="reveal"><summary>Quais formas de pagamento posso oferecer?<svg class="ico"><use href="#i-plus"/></svg></summary><p>Pix e cartão de crédito dentro da própria loja pelo Mercado Pago, além de NuPay, InfinitePay e pedido pelo WhatsApp. Você escolhe quais ficam ativas e pode dar desconto no Pix.</p></details>
+          <details class="reveal"><summary>A nota fiscal sai mesmo sozinha?<svg class="ico"><use href="#i-plus"/></svg></summary><p>Com a integração do Bling ativa, sim: quando o pagamento é aprovado, a NF-e é gerada, enviada à SEFAZ e, quando autorizada, vai por e-mail ao cliente com DANFE e XML. Se a SEFAZ rejeitar, o painel mostra o motivo para você corrigir e reenviar.</p></details>
+          <details class="reveal"><summary>Como funciona o frete e a etiqueta?<svg class="ico"><use href="#i-plus"/></svg></summary><p>O frete é calculado pelo CEP do cliente com Melhor Envio ou Correios, ou com regras próprias (entrega local, valor fixo, retirada). Com o Melhor Envio, a etiqueta é paga com seu saldo, gerada e salva em PDF para imprimir, sem você entrar no site deles.</p></details>
+          <details class="reveal"><summary>O atendimento com IA pode passar informação errada?<svg class="ico"><use href="#i-plus"/></svg></summary><p>Ela responde com base no seu catálogo, estoque e políticas reais, e só mostra pedidos do próprio cliente logado. Quando não sabe, encaminha para o seu WhatsApp, e o painel mostra essas perguntas para você completar as informações.</p></details>
+          <details class="reveal"><summary>Serve para outros segmentos além de moda?<svg class="ico"><use href="#i-plus"/></svg></summary><p>A plataforma nasceu para moda, com grade de tamanhos e cores, mas as variações são personalizáveis e funcionam para qualquer produto com atributos. Chame a gente para avaliar o seu caso.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+      <div class="wrap">
+        <div class="cta-box reveal">
+          <h2>Pronta para ter uma loja que trabalha por você?</h2>
+          <p>Chame no WhatsApp, conte sobre a sua marca e veja a plataforma funcionando ao vivo.</p>
+          <div class="hero-ctas">
+            <a class="btn btn-white" data-wa="Olá! Quero ver uma demonstração da VirtualStore." href="#">Quero uma demonstração <svg class="ico sm"><use href="#i-arrow"/></svg></a>
+            <a class="btn btn-outline-w" href="https://www.instagram.com/budstack.tech" target="_blank" rel="noopener noreferrer"><svg class="ico sm"><use href="#i-insta"/></svg>@budstack.tech</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <a href="#top" class="logo"><span class="logo-mark"><svg class="ico sm"><use href="#i-bag"/></svg></span><span>VirtualStore<small>by BudStack</small></span></a>
+      <span>© <span id="year">2026</span> BudStack. Todos os direitos reservados.</span>
+      <div class="links">
+        <a href="https://www.instagram.com/budstack.tech" target="_blank" rel="noopener noreferrer"><svg class="ico sm"><use href="#i-insta"/></svg>Instagram</a>
+        <a data-wa="Olá! Vim pela landing page da VirtualStore." href="#"><svg class="ico sm"><use href="#i-msg"/></svg>WhatsApp</a>
       </div>
     </div>
-  </section>
+  </footer>
 
-  <!-- Orders section -->
-  <section class="py-24 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid md:grid-cols-2 gap-16 items-center">
-        <div class="rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
-          <div class="bg-gray-100 px-4 py-2.5 flex items-center gap-2 border-b border-gray-200">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-            <span class="ml-3 flex-1 bg-white rounded h-4 max-w-xs text-xs text-gray-400 flex items-center px-2">admin.sujaloja.com/pedidos</span>
-          </div>
-          <img
-            src="images/pedidos.png"
-            alt="Gestao de pedidos VirtualStore"
-            class="w-full block"
-            loading="lazy"
-          />
-        </div>
-        <div>
-          <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium px-4 py-1.5 rounded-full mb-6">
-            Gestao de pedidos
-          </div>
-          <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-6 leading-tight">Cada pedido sob controle, do início ao fim</h2>
-          <p class="text-gray-500 leading-relaxed mb-8">Filtre por status, data ou cliente, acompanhe o rastreio e gerencie cancelamentos — tudo em uma lista clara e organizada.</p>
-          <div class="space-y-4">
-            <div class="flex gap-3 items-start">
-              <div class="mt-1 w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              </div>
-              <div><p class="font-semibold text-sm text-gray-900">Busca e filtros avancados</p><p class="text-gray-500 text-xs mt-0.5">Filtre por numero, nome, e-mail, status e intervalo de datas</p></div>
-            </div>
-            <div class="flex gap-3 items-start">
-              <div class="mt-1 w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              </div>
-              <div><p class="font-semibold text-sm text-gray-900">Status em destaque</p><p class="text-gray-500 text-xs mt-0.5">Pendente, Pago, Enviado, Entregue e Cancelado com badge visual</p></div>
-            </div>
-            <div class="flex gap-3 items-start">
-              <div class="mt-1 w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              </div>
-              <div><p class="font-semibold text-sm text-gray-900">Codigo de rastreio integrado</p><p class="text-gray-500 text-xs mt-0.5">Adicione o codigo de rastreio e o cliente acompanha a entrega</p></div>
-            </div>
-            <div class="flex gap-3 items-start">
-              <div class="mt-1 w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              </div>
-              <div><p class="font-semibold text-sm text-gray-900">Total consolidado</p><p class="text-gray-500 text-xs mt-0.5">Valor total dos pedidos filtrados exibido no topo da lista</p></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <a class="wa-float" data-wa="Olá! Vim pela landing page da VirtualStore e quero saber mais." href="#" aria-label="Falar no WhatsApp">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.76-1.65-2.05-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.5h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.8h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88 2.64 0 5.12 1.03 6.99 2.9a9.82 9.82 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.89 9.88m8.41-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.33.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.16-3.48-8.41"/></svg>
+  </a>
 
-  <!-- Reports section -->
-  <section id="relatorios" class="py-24 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">Relatórios que geram decisões</h2>
-        <p class="text-gray-500 text-lg max-w-xl mx-auto">Dados claros sobre faturamento, performance por região e margem de lucro real de cada produto.</p>
-      </div>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
-          <div class="inline-flex p-2.5 rounded-xl text-blue-600 bg-blue-50 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-          </div>
-          <h3 class="font-bold text-gray-900 mb-2">Faturamento mensal</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Gráfico de barras com receita mês a mês para o ano selecionado. Filtre por mês específico para análise detalhada.</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
-          <div class="inline-flex p-2.5 rounded-xl text-blue-600 bg-blue-50 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          </div>
-          <h3 class="font-bold text-gray-900 mb-2">Vendas por estado</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Ranking de estados por faturamento com pedidos, receita e ticket médio. Identifique seus mercados mais fortes.</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
-          <div class="inline-flex p-2.5 rounded-xl text-purple-600 bg-purple-50 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-          </div>
-          <h3 class="font-bold text-gray-900 mb-2">Vendas por categoria</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Descubra quais categorias vendem mais e direcione seu estoque e marketing para os produtos certos.</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
-          <div class="inline-flex p-2.5 rounded-xl text-emerald-600 bg-emerald-50 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-          </div>
-          <h3 class="font-bold text-gray-900 mb-2">Margem por produto</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Veja lucro e margem % de cada produto vendido no período. Badge verde/amarelo/vermelho por performance.</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
-          <div class="inline-flex p-2.5 rounded-xl text-indigo-600 bg-indigo-50 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          </div>
-          <h3 class="font-bold text-gray-900 mb-2">Margem por pedido</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Analise a lucratividade de cada pedido individualmente. Identifique pedidos de alto e baixo retorno.</p>
-        </div>
-        <div class="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md transition-shadow">
-          <div class="inline-flex p-2.5 rounded-xl text-red-600 bg-red-50 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-          </div>
-          <h3 class="font-bold text-gray-900 mb-2">Cancelamentos</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Veja os motivos de cancelamento mais frequentes e o volume de vendas perdidas para reduzir a taxa.</p>
-        </div>
-      </div>
+  <script>
+    (function () {
+      var WHATSAPP = "5519981687551";
+      document.querySelectorAll("[data-wa]").forEach(function (a) {
+        a.href = "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(a.getAttribute("data-wa"));
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+      });
 
-      <!-- Reports screenshots -->
-      <div class="mt-16 grid md:grid-cols-2 gap-6">
-        <div class="rounded-2xl overflow-hidden shadow-lg ring-1 ring-gray-200">
-          <div class="bg-gray-100 px-4 py-2.5 flex items-center gap-2 border-b border-gray-200">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-            <span class="ml-3 flex-1 bg-white rounded h-4 max-w-xs text-xs text-gray-400 flex items-center px-2">admin.sujaloja.com/relatorios</span>
-          </div>
-          <img
-            src="images/relatorios-1.png"
-            alt="Relatorios de faturamento e vendas"
-            class="w-full block"
-            loading="lazy"
-          />
-        </div>
-        <div class="rounded-2xl overflow-hidden shadow-lg ring-1 ring-gray-200">
-          <div class="bg-gray-100 px-4 py-2.5 flex items-center gap-2 border-b border-gray-200">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-            <span class="ml-3 flex-1 bg-white rounded h-4 max-w-xs text-xs text-gray-400 flex items-center px-2">admin.sujaloja.com/relatorios</span>
-          </div>
-          <img
-            src="images/relatorios-2.png"
-            alt="Margem de lucro por produto e pedido"
-            class="w-full block"
-            loading="lazy"
-          />
-        </div>
-      </div>
-    </div>
-  </section>
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
 
-  <!-- Store front section -->
-  <section id="loja" class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid md:grid-cols-2 gap-16 items-center">
-      <div>
-        <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium px-4 py-1.5 rounded-full mb-6">
-          Loja virtual
-        </div>
-        <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-6 leading-tight">Vitrine bonita e responsiva para seus clientes</h2>
-        <p class="text-gray-500 leading-relaxed mb-8">Seus clientes têm acesso a uma loja moderna com catálogo de produtos, carrinho, lista de favoritos, avaliações e checkout — tudo otimizado para mobile.</p>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>Vitrine responsiva</div>
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>Busca de produtos</div>
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>Lista de favoritos</div>
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>Carrinho persistente</div>
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>Mobile-first</div>
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5"/><circle cx="17.5" cy="10.5" r="0.5"/><circle cx="8.5" cy="7.5" r="0.5"/><circle cx="6.5" cy="12.5" r="0.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></div>Cores personalizáveis</div>
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>Vendas por estado</div>
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>Categorias e filtros</div>
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>Rastreio de entrega</div>
-          <div class="flex items-center gap-2 text-sm text-gray-700"><div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>Notificações por e-mail</div>
-        </div>
-      </div>
-      <!-- Store home hero screenshot -->
-      <div class="rounded-2xl overflow-hidden shadow-xl ring-1 ring-gray-200">
-        <div class="bg-gray-100 px-4 py-2.5 flex items-center gap-2 border-b border-gray-200">
-          <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-          <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-          <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-          <span class="ml-3 flex-1 bg-white rounded h-4 max-w-xs text-xs text-gray-400 flex items-center px-2">sujaloja.com</span>
-        </div>
-        <img src="images/loja-home.png" alt="Home da loja virtual - banner e hero section" class="w-full block" loading="lazy" />
-      </div>
-    </div>
+      var header = document.querySelector(".header");
+      var onScroll = function () { header.classList.toggle("scrolled", window.scrollY > 8); };
+      window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
 
-  </section>
+      var btn = document.getElementById("menuBtn"), nav = document.getElementById("mobileNav");
+      btn.addEventListener("click", function () {
+        var open = nav.classList.toggle("open");
+        btn.setAttribute("aria-expanded", open);
+      });
+      nav.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { nav.classList.remove("open"); btn.setAttribute("aria-expanded", "false"); }); });
 
-  <!-- Settings section -->
-  <section class="py-24 bg-gray-950 text-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">
-          Configuracoes da loja
-        </div>
-        <h2 class="text-3xl md:text-4xl font-black mb-4">Tudo configuravel pelo painel, sem codigo</h2>
-        <p class="text-gray-400 text-lg max-w-xl mx-auto">Nome, logo, cores, checkout, mensagem do WhatsApp e banners — personalize sua loja inteiramente pela interface.</p>
-      </div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-          <div class="bg-gray-800 px-4 py-2.5 flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-            <span class="ml-3 flex-1 bg-gray-700 rounded h-4 max-w-xs text-xs text-gray-400 flex items-center px-2">Informacoes e aparencia</span>
-          </div>
-          <img src="images/configuracoes-1.png" alt="Configuracoes da loja - informacoes e aparencia" class="w-full block" loading="lazy" />
-        </div>
-        <div class="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-          <div class="bg-gray-800 px-4 py-2.5 flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-            <span class="ml-3 flex-1 bg-gray-700 rounded h-4 max-w-xs text-xs text-gray-400 flex items-center px-2">Checkout e WhatsApp</span>
-          </div>
-          <img src="images/configuracoes-2.png" alt="Configuracoes de checkout e WhatsApp" class="w-full block" loading="lazy" />
-        </div>
-        <div class="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-          <div class="bg-gray-800 px-4 py-2.5 flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-            <span class="ml-3 flex-1 bg-gray-700 rounded h-4 max-w-xs text-xs text-gray-400 flex items-center px-2">Banners e textos</span>
-          </div>
-          <img src="images/configuracoes-3.png" alt="Configuracoes de banners e textos" class="w-full block" loading="lazy" />
-        </div>
-      </div>
-      <div class="mt-12 grid md:grid-cols-3 gap-6 text-center">
-        <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-          <p class="font-bold text-white mb-1">Identidade visual</p>
-          <p class="text-gray-400 text-sm">Logo, nome, descricao, cor dos botoes e menus</p>
-        </div>
-        <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-          <p class="font-bold text-white mb-1">Checkout configuravel</p>
-          <p class="text-gray-400 text-sm">WhatsApp ou Mercado Pago, com mensagem personalizada</p>
-        </div>
-        <div class="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-          <p class="font-bold text-white mb-1">Banners da vitrine</p>
-          <p class="text-gray-400 text-sm">Carrossel de imagens e textos do banner principal</p>
-        </div>
-      </div>
-    </div>
-  </section>
+      var els = document.querySelectorAll(".reveal");
+      if ("IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+        }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+        els.forEach(function (el) { io.observe(el); });
+      } else { els.forEach(function (el) { el.classList.add("in"); }); }
 
-  <!-- Integrations -->
-  <section id="integracoes" class="py-24 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4">Integrações prontas para usar</h2>
-        <p class="text-gray-500 text-lg max-w-xl mx-auto">Configure uma vez e receba pedidos e pagamentos automaticamente.</p>
-      </div>
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-2xl border border-gray-100 p-8 text-center hover:shadow-md transition-shadow">
-          <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <h3 class="font-bold text-gray-900 text-lg mb-2">WhatsApp</h3>
-          <p class="text-gray-500 text-sm leading-relaxed mb-4">Checkout direto pelo WhatsApp com mensagem automática contendo todos os dados do pedido formatados.</p>
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Mensagem estruturada</div>
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Dados do cliente</div>
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Itens e valores</div>
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Endereço de entrega</div>
-          </div>
-        </div>
-        <div class="bg-white rounded-2xl border border-gray-100 p-8 text-center hover:shadow-md transition-shadow">
-          <div class="w-14 h-14 bg-cyan-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          </div>
-          <h3 class="font-bold text-gray-900 text-lg mb-2">Mercado Pago</h3>
-          <p class="text-gray-500 text-sm leading-relaxed mb-4">Pagamento online com checkout nativo do Mercado Pago. Aceite cartão, Pix e boleto sem sair da loja.</p>
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Cartão de crédito/débito</div>
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Pix instantâneo</div>
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Boleto bancário</div>
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Checkout seguro</div>
-          </div>
-        </div>
-        <div class="bg-white rounded-2xl border border-gray-100 p-8 text-center hover:shadow-md transition-shadow">
-          <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          </div>
-          <h3 class="font-bold text-gray-900 text-lg mb-2">E-mail</h3>
-          <p class="text-gray-500 text-sm leading-relaxed mb-4">Notificações automáticas por e-mail para confirmação de pedido, atualização de status e reposição de estoque.</p>
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Confirmação de pedido</div>
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Atualização de status</div>
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Lista de espera</div>
-            <div class="flex items-center gap-2 text-xs text-gray-600 justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>SMTP configurável</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+      // Cronômetro ilustrativo da promoção relâmpago
+      var cd = document.getElementById("countdown"), left = 2 * 3600 + 14 * 60 + 37;
+      setInterval(function () {
+        left = left > 0 ? left - 1 : 3 * 3600;
+        var h = Math.floor(left / 3600), m = Math.floor(left % 3600 / 60), s = left % 60;
+        cd.textContent = [h, m, s].map(function (n) { return String(n).padStart(2, "0"); }).join(":");
+      }, 1000);
 
-  <!-- CTA / Developer contact -->
-  <section class="py-20 bg-gray-950 text-white">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium px-4 py-1.5 rounded-full mb-6">
-        Desenvolvedor
-      </div>
-      <h2 class="text-3xl md:text-4xl font-black mb-4">Quer uma loja igual para o seu negócio?</h2>
-      <p class="text-gray-400 text-lg leading-relaxed mb-8 max-w-xl mx-auto">
-        Entre em contato e eu configuro toda a plataforma para você — do zero ao ar, pronto para vender.
-      </p>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-        <a href="https://wa.me/5519981687551" target="_blank" rel="noopener noreferrer"
-          class="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-2xl transition-colors text-base">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Falar no WhatsApp
-        </a>
-        <a href="https://www.instagram.com/budstack.tech" target="_blank" rel="noopener noreferrer"
-          class="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white font-semibold px-8 py-4 rounded-2xl transition-all text-base">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-          @budstack.tech
-        </a>
-      </div>
-      <div class="border-t border-gray-800 pt-8">
-        <p class="text-gray-500 text-sm">
-          Desenvolvido por <span class="text-white font-semibold">Diego Benedetti</span>
-          · <a href="https://www.instagram.com/budstack.tech" target="_blank" rel="noopener noreferrer" class="text-pink-400 hover:text-pink-300 transition-colors">@budstack.tech</a>
-        </p>
-      </div>
-    </div>
-  </section>
-
+      // Prévia de cor da marca
+      var box = document.getElementById("swatches");
+      box.querySelectorAll("[data-c]").forEach(function (sw) {
+        var pick = function () {
+          box.querySelectorAll("[data-c]").forEach(function (o) { o.classList.remove("on"); o.setAttribute("aria-checked", "false"); });
+          sw.classList.add("on"); sw.setAttribute("aria-checked", "true");
+          box.style.setProperty("--pv", sw.getAttribute("data-c"));
+        };
+        sw.addEventListener("click", pick);
+        sw.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
+      });
+    })();
+  </script>
 </body>
 </html>
