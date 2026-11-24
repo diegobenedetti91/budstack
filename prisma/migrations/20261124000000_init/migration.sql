@@ -1,0 +1,36 @@
+-- CreateTable
+CREATE TABLE `Subscription` (
+    `id` VARCHAR(191) NOT NULL,
+    `code` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `plan` VARCHAR(191) NOT NULL,
+    `cycle` VARCHAR(191) NOT NULL,
+    `planPriceCents` INTEGER NOT NULL,
+    `domainFeeCents` INTEGER NOT NULL DEFAULT 0,
+    `totalCents` INTEGER NOT NULL,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'PENDING',
+    `paidAt` DATETIME(3) NULL,
+    `customerName` VARCHAR(191) NOT NULL,
+    `customerEmail` VARCHAR(191) NOT NULL,
+    `customerPhone` VARCHAR(191) NOT NULL,
+    `customerDocument` VARCHAR(191) NOT NULL,
+    `storeName` VARCHAR(191) NOT NULL,
+    `domainOption` VARCHAR(191) NOT NULL,
+    `domain` VARCHAR(191) NOT NULL,
+    `domainPaidAt` DATETIME(3) NULL,
+    `mpPreferenceId` VARCHAR(191) NULL,
+    `mpPreapprovalId` VARCHAR(191) NULL,
+    `mpPaymentId` VARCHAR(191) NULL,
+    `mpDomainPreferenceId` VARCHAR(191) NULL,
+    `mpSubscriptionStatus` VARCHAR(191) NULL,
+    `stage` VARCHAR(191) NOT NULL DEFAULT 'NOVO',
+    `notes` TEXT NULL,
+    `notifiedAt` DATETIME(3) NULL,
+
+    UNIQUE INDEX `Subscription_code_key`(`code`),
+    INDEX `Subscription_status_createdAt_idx`(`status`, `createdAt`),
+    INDEX `Subscription_mpPreapprovalId_idx`(`mpPreapprovalId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+

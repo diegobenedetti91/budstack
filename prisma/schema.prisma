@@ -1,0 +1,59 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// Uma contratação da VirtualStore feita pelo site.
+model Subscription {
+  id        String   @id @default(cuid())
+  /// Código curto mostrado ao cliente e usado como external_reference no Mercado Pago (ex.: BS-7K2M9Q)
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// id do plano em src/lib/plans.ts
+  plan           String
+  /// MENSAL | ANUAL
+  cycle          String
+  /// Valores congelados no momento da compra, em centavos
+  planPriceCents Int
+  domainFeeCents Int    @default(0)
+  /// Valor da primeira cobrança (anual: plano + domínio; mensal: só a mensalidade)
+  totalCents     Int
+
+  /// PENDING (aguardando pagamento) | PAID | CANCELLED
+  status String    @default("PENDING")
+  paidAt DateTime?
+
+  customerName     String
+  customerEmail    String
+  customerPhone    String
+  customerDocument String
+  storeName        String
+
+  /// OWN (cliente já tem) | REGISTER (BudStack registra)
+  domainOption String
+  domain       String
+  /// Quando a taxa de registro do domínio foi paga (só para REGISTER)
+  domainPaidAt DateTime?
+
+  mpPreferenceId       String?
+  mpPreapprovalId      String?
+  mpPaymentId          String?
+  mpDomainPreferenceId String?
+  /// Status da assinatura mensal no Mercado Pago (pending, authorized, paused, cancelled)
+  mpSubscriptionStatus String?
+
+  /// Etapa da implantação: NOVO | CONFIGURANDO | NO_AR | CANCELADO
+  stage      String    @default("NOVO")
+  notes      String?   @db.Text
+  notifiedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([mpPreapprovalId])
+}

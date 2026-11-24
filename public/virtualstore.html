@@ -244,6 +244,72 @@
     .ops-card b { display: block; font-size: 12.5px; }
     .ops-card span { color: var(--muted); font-size: 11px; }
 
+    /* Checkout steps + cashback line */
+    .co-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
+    .co-steps span { font-size: 11.5px; font-weight: 700; text-align: center; padding: 7px 4px; border-radius: 9px; background: var(--bg-soft); color: var(--muted); }
+    .co-steps .ok { background: var(--green-50); color: #0A8A50; }
+    .co-steps .cur { background: var(--blue); color: #fff; }
+    .cb-earn { margin-top: 10px; font-size: 12px; font-weight: 700; color: var(--violet); display: flex; align-items: center; gap: 6px; justify-content: center; }
+
+    /* Cashback mock */
+    .cr-hero { border-radius: 16px; background: var(--grad); color: #fff; padding: 18px; }
+    .cr-hero small { font-size: 12px; font-weight: 600; opacity: .85; }
+    .cr-hero > b { display: block; font-size: 30px; letter-spacing: -0.03em; margin-top: 2px; }
+    .cr-sub { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; opacity: .92; }
+    .cr-sub strong { font-weight: 800; margin-left: 4px; }
+    .cr-list { margin-top: 14px; display: grid; gap: 4px; }
+    .cr-list li { display: flex; align-items: center; gap: 12px; padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 12px; }
+    .cr-list li:last-child { border-bottom: 0; }
+    .cr-list .ic { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+    .cr-list b { display: block; font-size: 13px; }
+    .cr-list span { color: var(--muted); }
+    .cr-list em { margin-left: auto; font-style: normal; font-weight: 800; font-size: 13px; white-space: nowrap; }
+    .cr-list em.pos { color: var(--green); }
+    .cr-list em.wait { color: var(--muted); }
+    .cr-use { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border: 1px solid var(--blue); background: #F7F9FF; border-radius: 12px; font-size: 13px; font-weight: 700; }
+    .sw-toggle { width: 38px; height: 22px; border-radius: 99px; background: var(--blue); position: relative; flex-shrink: 0; }
+    .sw-toggle::after { content: ""; position: absolute; right: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+
+    /* Interest mock */
+    .it-row { display: grid; grid-template-columns: 1fr 52px 52px 82px; gap: 8px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--line); font-size: 12.5px; text-align: right; }
+    .it-row > span:first-child { text-align: left; display: flex; align-items: center; gap: 10px; font-weight: 700; min-width: 0; }
+    .it-row > span:first-child i { width: 36px; height: 44px; border-radius: 8px; flex-shrink: 0; }
+    .it-row > span:first-child span { display: grid; gap: 3px; }
+    .it-head { font-size: 11px; font-weight: 700; color: var(--muted); padding-top: 0; }
+    .it-head > span:first-child { font-weight: 700; }
+    .it-tag { font-style: normal; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--bg-soft); color: var(--muted); justify-self: start; }
+    .it-tag.warn { background: var(--amber-50); color: #9A5B00; }
+    .it-tag.good { background: var(--green-50); color: #0A8A50; }
+    .it-row b { color: var(--blue); font-size: 14px; }
+    .it-cta { margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center; height: auto; padding: 11px 14px; border-radius: 11px; background: var(--blue); color: #fff; font-size: 13px; font-weight: 700; }
+
+    /* New order alert mock */
+    .tab-title { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--bg-soft); padding: 5px 12px; border-radius: 8px 8px 0 0; }
+    .bell-btn { position: relative; width: 36px; height: 36px; border-radius: 11px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--ink); }
+    .bell-btn em { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 99px; background: var(--red); color: #fff; font-style: normal; font-size: 10.5px; font-weight: 800; display: grid; place-items: center; border: 2px solid #fff; }
+    .np-card { border: 1px solid var(--line); border-radius: 16px; padding: 16px; box-shadow: 0 0 0 4px rgba(18,183,106,.08); }
+    .np-head { display: flex; gap: 12px; align-items: center; }
+    .np-head .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; }
+    .np-head b { display: block; font-size: 14px; }
+    .np-head span { font-size: 12px; color: var(--muted); }
+    .np-steps { margin-top: 14px; display: grid; gap: 9px; font-size: 13px; font-weight: 600; }
+    .np-steps li { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+    .np-steps li small { font-weight: 500; color: var(--muted); margin-left: auto; font-size: 12px; }
+    .np-steps li i { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; position: relative; border: 2px solid #CBD3E1; }
+    .np-steps li.done { color: var(--ink); }
+    .np-steps li.done i { border-color: var(--green); background: var(--green); }
+    .np-steps li.done i::after { content: ""; position: absolute; left: 5px; top: 1.5px; width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+    .np-steps li.doing { color: var(--ink); }
+    .np-steps li.doing i { border-color: var(--blue-50); border-top-color: var(--blue); animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .np-status { margin-top: 14px; padding: 10px 12px; border-radius: 10px; background: var(--blue-50); color: var(--blue); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; transition: background .3s, color .3s; }
+    .np-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    .np-status.ready { background: var(--green-50); color: #0A8A50; }
+    .np-actions { display: flex; gap: 8px; margin-top: 10px; opacity: .35; transition: opacity .3s; }
+    .np-actions.ready { opacity: 1; }
+    .np-btn { flex: 1; height: 36px; border-radius: 10px; border: 1px solid var(--line); display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 12.5px; font-weight: 700; }
+    .np-btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+
     /* Dashboard mock */
     .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .kpi { border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
@@ -384,6 +450,8 @@
       .kpis { grid-template-columns: 1fr 1fr; }
       .kpis .kpi:nth-child(3) { display: none; }
       .ops-row { grid-template-columns: 1fr; }
+      .it-row { grid-template-columns: 1fr 46px 74px; }
+      .it-row > span:nth-child(3) { display: none; }
       .panel { padding: 16px; }
       .sec-head { margin-bottom: 40px; }
       .sec-head p, .split .copy > p { font-size: 16.5px; }
@@ -448,8 +516,9 @@
         <a href="#ia">Atendimento IA</a>
         <a href="#gestao">Gestão</a>
         <a href="#faq">Dúvidas</a>
+        <a href="/planos">Planos</a>
       </nav>
-      <a class="btn btn-primary btn-sm btn-desk" data-wa="Olá! Vi a landing page da VirtualStore e quero saber mais sobre a loja virtual." href="#">Quero minha loja</a>
+      <a class="btn btn-primary btn-sm btn-desk" href="/planos">Ver planos</a>
       <button class="menu-btn" id="menuBtn" aria-label="Abrir menu" aria-expanded="false"><svg class="ico"><use href="#i-menu"/></svg></button>
     </div>
     <div class="mobile-nav" id="mobileNav">
@@ -458,7 +527,8 @@
       <a href="#ia">Atendimento IA</a>
       <a href="#gestao">Gestão</a>
       <a href="#faq">Dúvidas</a>
-      <a class="btn btn-primary" data-wa="Olá! Vi a landing page da VirtualStore e quero saber mais sobre a loja virtual." href="#">Quero minha loja</a>
+      <a href="/planos">Planos</a>
+      <a class="btn btn-primary" href="/planos">Ver planos</a>
     </div>
   </header>
 
@@ -467,11 +537,11 @@
     <section class="hero">
       <div class="wrap hero-grid">
         <div>
-          <span class="eyebrow"><b>Novo</b> Atendimento com IA + nota fiscal automática</span>
+          <span class="eyebrow"><b>Novo</b> Cashback + aviso de promoção para interessados</span>
           <h1>Sua loja de moda <span class="grad-text">vendendo sozinha</span>, do clique à entrega.</h1>
           <p class="lead">Uma loja virtual com a sua marca que recebe o pagamento, emite a nota, gera a etiqueta, avisa o cliente e mostra o seu lucro real. Você cuida das peças, a plataforma cuida do resto.</p>
           <div class="hero-ctas">
-            <a class="btn btn-primary" data-wa="Olá! Quero uma loja virtual como a VirtualStore para o meu negócio." href="#">Quero minha loja <svg class="ico sm"><use href="#i-arrow"/></svg></a>
+            <a class="btn btn-primary" href="/planos">Quero minha loja <svg class="ico sm"><use href="#i-arrow"/></svg></a>
             <a class="btn btn-ghost" href="#recursos">Ver o que está incluso</a>
           </div>
           <div class="hero-checks">
@@ -537,7 +607,7 @@
           <div class="copy reveal">
             <span class="kicker">Vitrine que converte</span>
             <h2>Uma loja bonita que faz o cliente comprar mais</h2>
-            <p>Feita para moda e pensada para o celular, onde está a maior parte dos seus clientes. Tudo que ajuda a decidir e a voltar está ali.</p>
+            <p>Feita para moda e pensada para o celular, onde está a maior parte dos seus clientes. Tudo que ajuda a decidir e a voltar está ali, e no celular o botão de comprar fica sempre à mão numa barra fixa.</p>
             <ul class="feat-list">
               <li><span class="ic"><svg class="ico"><use href="#i-zap"/></svg></span><div><b>Promoção relâmpago com cronômetro</b><span>Preço "de/por" e contagem regressiva que criam urgência de verdade.</span></div></li>
               <li><span class="ic"><svg class="ico"><use href="#i-spark"/></svg></span><div><b>"Combina com" e vistos recentemente</b><span>Sugestões na página do produto e no carrinho aumentam o ticket médio.</span></div></li>
@@ -570,7 +640,7 @@
           <div class="copy reveal">
             <span class="kicker">Checkout sem atrito</span>
             <h2>O cliente paga do jeito que preferir, sem sair da sua loja</h2>
-            <p>Menos etapas e menos redirecionamentos significam menos desistências. O frete é calculado na hora pelo CEP.</p>
+            <p>Checkout em 3 passos (dados, entrega e pagamento) que confere cada campo antes de seguir e aponta exatamente o que falta. O frete é calculado na hora pelo CEP.</p>
             <ul class="feat-list">
               <li><span class="ic"><svg class="ico"><use href="#i-pix"/></svg></span><div><b>Pix com desconto e cartão parcelado</b><span>Checkout transparente do Mercado Pago, além de NuPay, InfinitePay e pedido pelo WhatsApp.</span></div></li>
               <li><span class="ic"><svg class="ico"><use href="#i-truck"/></svg></span><div><b>Frete do seu jeito</b><span>Melhor Envio, Correios, entrega local, frete fixo, híbrido ou retirada na loja, com prazo de produção somado.</span></div></li>
@@ -578,7 +648,7 @@
             </ul>
           </div>
           <div class="panel reveal" aria-hidden="true">
-            <div class="panel-title">Pagamento <span class="chip">Compra segura</span></div>
+            <div class="co-steps"><span class="ok">✓ Dados</span><span class="ok">✓ Entrega</span><span class="cur">3 Pagamento</span></div>
             <div class="pay-opts">
               <div class="pay on"><span class="ic ic-green"><svg class="ico sm"><use href="#i-pix"/></svg></span><div>Pix<small>5% de desconto · aprovação na hora</small></div><span class="radio"></span></div>
               <div class="pay"><span class="ic ic-blue"><svg class="ico sm"><use href="#i-card"/></svg></span><div>Cartão de crédito<small>Em até 6x, direto na loja</small></div><span class="radio"></span></div>
@@ -590,6 +660,35 @@
             </div>
             <div class="coupon-ok"><svg class="ico sm"><use href="#i-check"/></svg>Cupom BEMVINDA10 aplicado · −R$ 18,39</div>
             <div class="total"><span>Total</span><span>R$ 177,71</span></div>
+            <div class="cb-earn"><svg class="ico xs"><use href="#i-spark"/></svg>Você ganha R$ 8,89 de cashback nesta compra</div>
+          </div>
+        </div>
+
+        <div class="split" id="cashback">
+          <div class="copy reveal">
+            <span class="kicker">Cashback</span>
+            <h2>Dê crédito na loja e faça o cliente voltar para comprar de novo</h2>
+            <p>A cada compra, o cliente ganha uma parte de volta para usar na próxima. Ele vê o cashback no produto, no carrinho e no checkout, e acompanha tudo na conta dele.</p>
+            <ul class="feat-list">
+              <li><span class="ic"><svg class="ico"><use href="#i-sliders"/></svg></span><div><b>Regras do seu jeito</b><span>Percentual, prazo para liberar após a entrega, validade, pedido mínimo, limite por pedido e se acumula com cupom ou Pix.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-mail"/></svg></span><div><b>Lembretes que trazem o cliente</b><span>E-mail quando o crédito é liberado e quando está para vencer em 7 dias.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-shield"/></svg></span><div><b>Saldo sempre certo</b><span>Cancelamentos, Pix não pago e devoluções ajustam o crédito sozinhos. Você ainda pode fazer ajustes manuais.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-chart"/></svg></span><div><b>Resultado no painel</b><span>Quanto foi ganho, usado e está em aberto, e quanto do crédito virou compra.</span></div></li>
+            </ul>
+          </div>
+          <div class="panel reveal" aria-hidden="true">
+            <div class="panel-title">Meu crédito <span class="chip">Área do cliente</span></div>
+            <div class="cr-hero">
+              <small>Saldo disponível</small>
+              <b>R$ 42,80</b>
+              <div class="cr-sub"><span>A liberar <strong>R$ 18,30</strong></span><span>Vence em 12/01 <strong>R$ 15,00</strong></span></div>
+            </div>
+            <ul class="cr-list">
+              <li><span class="ic ic-green">+</span><div><b>Cashback do pedido #1042</b><span>Liberado após a entrega</span></div><em class="pos">+R$ 14,50</em></li>
+              <li><span class="ic ic-blue">−</span><div><b>Usado no pedido #1047</b><span>Desconto no checkout</span></div><em>−R$ 20,00</em></li>
+              <li><span class="ic ic-amber">⏳</span><div><b>Cashback do pedido #1051</b><span>Libera 7 dias após a entrega</span></div><em class="wait">R$ 18,30</em></li>
+            </ul>
+            <div class="cr-use"><span>Usar meu crédito nesta compra</span><span class="sw-toggle"></span></div>
           </div>
         </div>
       </div>
@@ -606,7 +705,7 @@
             <ul class="feat-list">
               <li><span class="ic"><svg class="ico"><use href="#i-search"/></svg></span><div><b>Consulta estoque por tamanho e cor</b><span>"Tem o vestido no M?" A resposta sai na hora, com o preço promocional.</span></div></li>
               <li><span class="ic"><svg class="ico"><use href="#i-box"/></svg></span><div><b>Responde onde está o pedido</b><span>Mostra status e rastreio apenas para o cliente dono do pedido.</span></div></li>
-              <li><span class="ic"><svg class="ico"><use href="#i-msg"/></svg></span><div><b>Passa para o WhatsApp com o resumo</b><span>Você recebe a conversa resumida, sem pedir para o cliente repetir.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-msg"/></svg></span><div><b>Chama você no WhatsApp só quando precisa</b><span>Se o cliente pede uma pessoa ou a dúvida exige você, a conversa segue no WhatsApp já resumida, sem o cliente repetir nada.</span></div></li>
               <li><span class="ic"><svg class="ico"><use href="#i-chart"/></svg></span><div><b>Mostra o que seus clientes perguntam</b><span>Veja os temas mais comuns e o que ela não soube responder, para melhorar suas políticas.</span></div></li>
             </ul>
           </div>
@@ -617,7 +716,8 @@
               <div class="msg ai">Tem sim! O <b>Vestido Midi Fluido</b> azul no M está disponível por <b>R$ 183,90</b> (promoção até hoje) ou R$ 174,70 no Pix.</div>
               <div class="msg me">E meu pedido da semana passada, já saiu?</div>
               <div class="msg ai">Seu pedido <b>#1038</b> foi enviado ontem pelos Correios e chega em até 4 dias úteis. O rastreio é QB123456789BR.</div>
-              <div class="wa-handoff"><svg class="ico sm"><use href="#i-msg"/></svg>Falar com a loja no WhatsApp</div>
+              <div class="msg me">Quero trocar o tamanho, posso falar com alguém?</div>
+              <div class="wa-handoff"><svg class="ico sm"><use href="#i-msg"/></svg>Continuar no WhatsApp · com o resumo da conversa</div>
             </div>
           </div>
         </div>
@@ -661,6 +761,43 @@
             </div>
           </div>
         </div>
+
+        <div class="split" id="avisos">
+          <div class="copy reveal">
+            <span class="kicker">Aviso de novo pedido</span>
+            <h2>Saiba na hora que vendeu, e quando já pode despachar</h2>
+            <p>Chegou um pedido pago? O painel avisa com som e um cartão em destaque, e vai marcando sozinho cada etapa até a encomenda estar pronta para sair.</p>
+            <ul class="feat-list">
+              <li><span class="ic"><svg class="ico"><use href="#i-bell"/></svg></span><div><b>Sino com contador</b><span>Mostra os pedidos pagos que você ainda não viu, e o número aparece até no título da aba.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-check"/></svg></span><div><b>Checklist que se completa sozinho</b><span>Pagamento aprovado, pedido no Bling, nota fiscal com o número e etiqueta com o rastreio.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-shield"/></svg></span><div><b>Pronto para despachar ou precisa de atenção</b><span>Se a nota for rejeitada ou faltar saldo no Melhor Envio, você vê o motivo na hora.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-phone"/></svg></span><div><b>No computador e no celular</b><span>Aviso no computador mesmo com o painel minimizado, e o que você já viu fica marcado em qualquer aparelho.</span></div></li>
+            </ul>
+          </div>
+          <div class="panel reveal" aria-hidden="true">
+            <div class="panel-title">
+              <span class="tab-title">(2) Painel · Sua Marca</span>
+              <span class="bell-btn"><svg class="ico sm"><use href="#i-bell"/></svg><em>2</em></span>
+            </div>
+            <div class="np-card" id="npCard">
+              <div class="np-head">
+                <span class="ic ic-green"><svg class="ico sm"><use href="#i-bag"/></svg></span>
+                <div><b>Novo pedido pago · PD1047 · <span style="white-space:nowrap;font-size:inherit;color:inherit">R$ 289,90</span></b><span>Carla S. · 2 peças · SEDEX</span></div>
+              </div>
+              <ul class="np-steps">
+                <li class="done"><i></i>Pagamento aprovado</li>
+                <li class="done"><i></i>Pedido no Bling</li>
+                <li class="done"><i></i>Nota fiscal <small>nº 1.284</small></li>
+                <li class="doing" id="npLabel"><i></i>Etiqueta <small id="npTrack">gerando…</small></li>
+              </ul>
+              <div class="np-status" id="npStatus"><span class="np-dot"></span>Preparando…</div>
+              <div class="np-actions" id="npActions">
+                <span class="np-btn primary"><svg class="ico xs"><use href="#i-printer"/></svg>Imprimir etiqueta</span>
+                <span class="np-btn">Abrir pedido</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -671,9 +808,10 @@
           <div class="copy reveal">
             <span class="kicker">Gestão e lucro real</span>
             <h2>Saiba quanto sobra de verdade em cada venda</h2>
-            <p>Faturamento é só metade da história. O painel desconta taxa do pagamento, custo das peças, frete, cupons e devoluções para mostrar o seu lucro líquido.</p>
+            <p>Faturamento é só metade da história. O painel monta o seu DRE e desconta descontos, impostos, custo das peças, taxas, frete e devoluções para mostrar o lucro líquido.</p>
             <ul class="feat-list">
-              <li><span class="ic"><svg class="ico"><use href="#i-target"/></svg></span><div><b>Painel com meta do mês</b><span>Faturamento, pedidos, ticket médio e o quanto falta para bater a meta.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-file"/></svg></span><div><b>DRE no padrão de mercado</b><span>Vendas brutas (GMV), faturamento, receita líquida, custo das peças (CMV) e impostos pela sua alíquota.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-target"/></svg></span><div><b>Meta do mês e funil de conversão</b><span>Quanto falta para a meta e onde o cliente desiste: visitas, produtos vistos, carrinho, checkout e compra.</span></div></li>
               <li><span class="ic"><svg class="ico"><use href="#i-trend"/></svg></span><div><b>Perdas que você não via</b><span>Cancelamentos, devoluções, pedidos com prejuízo e carrinhos não recuperados.</span></div></li>
               <li><span class="ic"><svg class="ico"><use href="#i-box"/></svg></span><div><b>Produtos e clientes</b><span>Estoque parado, demanda sem estoque, recorrência e margem por produto.</span></div></li>
               <li><span class="ic"><svg class="ico"><use href="#i-pin"/></svg></span><div><b>De onde vêm suas vendas</b><span>Por estado, canal, campanha e taxas por forma de pagamento.</span></div></li>
@@ -688,14 +826,14 @@
             </div>
             <div class="goal"><div><span>Meta de novembro</span><span>72%</span></div><div class="bar"><i></i></div></div>
             <div class="waterfall">
-              <small>Do faturamento ao lucro</small>
+              <small>DRE · das vendas ao lucro</small>
               <div class="wf">
-                <div><i style="bottom:0;height:100%;background:var(--blue)"></i><span>Receita</span></div>
-                <div><i style="bottom:88%;height:12%;background:#F7A39C"></i><span>Cupons</span></div>
-                <div><i style="bottom:80%;height:8%;background:#F7A39C"></i><span>Taxas</span></div>
-                <div><i style="bottom:42%;height:38%;background:#F7A39C"></i><span>Peças</span></div>
-                <div><i style="bottom:31%;height:11%;background:#F7A39C"></i><span>Frete</span></div>
-                <div><i style="bottom:0;height:31%;background:var(--green)"></i><span>Lucro</span></div>
+                <div><i style="bottom:0;height:100%;background:var(--blue)"></i><span>GMV</span></div>
+                <div><i style="bottom:88%;height:12%;background:#F7A39C"></i><span>Descontos</span></div>
+                <div><i style="bottom:81%;height:7%;background:#F7A39C"></i><span>Impostos</span></div>
+                <div><i style="bottom:43%;height:38%;background:#F7A39C"></i><span>CMV</span></div>
+                <div><i style="bottom:30%;height:13%;background:#F7A39C"></i><span>Taxa+frete</span></div>
+                <div><i style="bottom:0;height:30%;background:var(--green)"></i><span>Lucro</span></div>
               </div>
               <div class="wf-labels"></div>
             </div>
@@ -715,10 +853,32 @@
         <div class="cards">
           <div class="card reveal"><div class="ic ic-blue"><svg class="ico"><use href="#i-target"/></svg></div><h3>Meta Pixel + API de Conversões</h3><p>Anúncios do Instagram e Facebook otimizados com dados reais de compra, enviados também pelo servidor.</p></div>
           <div class="card reveal"><div class="ic ic-violet"><svg class="ico"><use href="#i-pin"/></svg></div><h3>Origem de cada pedido</h3><p>Saiba se a venda veio do Instagram, Google, de uma campanha ou de um link seu, e invista onde funciona.</p></div>
-          <div class="card reveal"><div class="ic ic-amber"><svg class="ico"><use href="#i-cart"/></svg></div><h3>Carrinho abandonado</h3><p>Lembrete automático por e-mail e relatório de quantos carrinhos viraram venda depois.</p></div>
+          <div class="card reveal"><div class="ic ic-amber"><svg class="ico"><use href="#i-cart"/></svg></div><h3>Carrinho abandonado</h3><p>Lembrete por e-mail com as fotos das peças, "Lembrar todos" em um clique, WhatsApp com mensagem pronta e a taxa de recuperação.</p></div>
           <div class="card reveal"><div class="ic ic-green"><svg class="ico"><use href="#i-tag"/></svg></div><h3>Cupons por link</h3><p>Mande um link com o cupom e ele já entra aplicado. A IA também pode divulgar os cupons que você liberar.</p></div>
           <div class="card reveal"><div class="ic ic-blue"><svg class="ico"><use href="#i-zap"/></svg></div><h3>Promoções relâmpago</h3><p>Agende descontos com início e fim. O preço muda sozinho na vitrine e no checkout.</p></div>
           <div class="card reveal"><div class="ic ic-violet"><svg class="ico"><use href="#i-search"/></svg></div><h3>Pronta para o Google</h3><p>SEO de produto, sitemap e dados estruturados para suas peças aparecerem nas buscas.</p></div>
+        </div>
+
+        <div class="split rev" id="interesse" style="margin-top:96px">
+          <div class="copy reveal">
+            <span class="kicker">Interesse por produto</span>
+            <h2>Avise quem já queria a peça, no momento em que ela baixa de preço</h2>
+            <p>A loja sabe quem olhou, favoritou ou deixou cada peça no carrinho. Quando ela entra em promoção, essas pessoas recebem um e-mail com a foto, o "de/por" ou o cupom.</p>
+            <ul class="feat-list">
+              <li><span class="ic"><svg class="ico"><use href="#i-trend"/></svg></span><div><b>Ranking de interesse</b><span>Visualizações, carrinhos, vendas e conversão por produto, com selos como "muito visto, pouco vendido".</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-zap"/></svg></span><div><b>Aviso automático</b><span>Disparado quando o preço baixa ou uma promoção relâmpago começa. Ou envie com um clique, vendo antes quem vai receber.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-shield"/></svg></span><div><b>Sem cansar o cliente</b><span>No máximo 3 e-mails a cada 30 dias, nunca o mesmo produto duas vezes e descadastro em um clique.</span></div></li>
+              <li><span class="ic"><svg class="ico"><use href="#i-chart"/></svg></span><div><b>Resultado de cada aviso</b><span>Cliques e compras de cada campanha nos 14 dias seguintes.</span></div></li>
+            </ul>
+          </div>
+          <div class="panel reveal" aria-hidden="true">
+            <div class="panel-title">Interesse por produto <span class="chip">Últimos 30 dias</span></div>
+            <div class="it-row it-head"><span>Produto</span><span>Vistas</span><span>Vendas</span><span>Interessados</span></div>
+            <div class="it-row"><span><i class="ph-2"></i><span>Vestido Midi<em class="it-tag warn">Muito visto, pouco vendido</em></span></span><span>1.284</span><span>9</span><span><b>38</b></span></div>
+            <div class="it-row"><span><i class="ph-1"></i><span>Camisa Linho<em class="it-tag good">Campeão</em></span></span><span>956</span><span>41</span><span><b>22</b></span></div>
+            <div class="it-row"><span><i class="ph-3"></i><span>Blusa Tricô<em class="it-tag">Pouca procura</em></span></span><span>212</span><span>3</span><span><b>6</b></span></div>
+            <div class="it-cta"><svg class="ico sm"><use href="#i-mail"/></svg>Avisar 38 interessados: o Vestido Midi baixou de preço</div>
+          </div>
         </div>
       </div>
     </section>
@@ -732,7 +892,7 @@
             <h2>Sua identidade em cada detalhe, sem escrever uma linha de código</h2>
             <p>Logo, cores, banners, menu e textos são ajustados pelo painel. Até os e-mails enviados aos clientes saem com as cores da sua loja.</p>
             <ul>
-              <li><svg class="ico sm"><use href="#i-check"/></svg>Cores de botões e destaques aplicadas na loja e nos e-mails</li>
+              <li><svg class="ico sm"><use href="#i-check"/></svg>Cor principal, dos botões e do menu, com contraste do texto ajustado sozinho</li>
               <li><svg class="ico sm"><use href="#i-check"/></svg>Menu, categorias, variações e atributos do seu jeito</li>
               <li><svg class="ico sm"><use href="#i-check"/></svg>Banner de cookies conforme a LGPD e pagamento protegido</li>
             </ul>
@@ -776,8 +936,11 @@
             <li><svg class="ico xs"><use href="#i-check"/></svg>Pix e cartão transparentes (Mercado Pago)</li>
             <li><svg class="ico xs"><use href="#i-check"/></svg>NuPay, InfinitePay e pedido via WhatsApp</li>
             <li><svg class="ico xs"><use href="#i-check"/></svg>Desconto automático no Pix</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Checkout em 3 passos com validação</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Cashback com crédito na loja</li>
             <li><svg class="ico xs"><use href="#i-check"/></svg>Cupons e promoções relâmpago</li>
             <li><svg class="ico xs"><use href="#i-check"/></svg>Recuperação de carrinho abandonado</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Aviso de promoção para interessados</li>
           </ul></div>
           <div class="group reveal"><h3><span class="ic"><svg class="ico sm"><use href="#i-sliders"/></svg></span>Catálogo</h3><ul>
             <li><svg class="ico xs"><use href="#i-check"/></svg>Produtos com estoque por variação</li>
@@ -802,7 +965,9 @@
           </ul></div>
           <div class="group reveal"><h3><span class="ic"><svg class="ico sm"><use href="#i-chart"/></svg></span>Gestão e inteligência</h3><ul>
             <li><svg class="ico xs"><use href="#i-check"/></svg>Painel com meta do mês e pendências</li>
-            <li><svg class="ico xs"><use href="#i-check"/></svg>Lucro real, margem e perdas</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Aviso de novo pedido com som e checklist</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>DRE com lucro real, impostos e perdas</li>
+            <li><svg class="ico xs"><use href="#i-check"/></svg>Funil de conversão e interesse por produto</li>
             <li><svg class="ico xs"><use href="#i-check"/></svg>Vendas por estado, canal e campanha</li>
             <li><svg class="ico xs"><use href="#i-check"/></svg>Atendimento com IA 24h e seus insights</li>
             <li><svg class="ico xs"><use href="#i-check"/></svg>Meta Pixel e API de Conversões</li>
@@ -841,6 +1006,7 @@
           <details class="reveal"><summary>A nota fiscal sai mesmo sozinha?<svg class="ico"><use href="#i-plus"/></svg></summary><p>Com a integração do Bling ativa, sim: quando o pagamento é aprovado, a NF-e é gerada, enviada à SEFAZ e, quando autorizada, vai por e-mail ao cliente com DANFE e XML. Se a SEFAZ rejeitar, o painel mostra o motivo para você corrigir e reenviar.</p></details>
           <details class="reveal"><summary>Como funciona o frete e a etiqueta?<svg class="ico"><use href="#i-plus"/></svg></summary><p>O frete é calculado pelo CEP do cliente com Melhor Envio ou Correios, ou com regras próprias (entrega local, valor fixo, retirada). Com o Melhor Envio, a etiqueta é paga com seu saldo, gerada e salva em PDF para imprimir, sem você entrar no site deles.</p></details>
           <details class="reveal"><summary>O atendimento com IA pode passar informação errada?<svg class="ico"><use href="#i-plus"/></svg></summary><p>Ela responde com base no seu catálogo, estoque e políticas reais, e só mostra pedidos do próprio cliente logado. Quando não sabe, encaminha para o seu WhatsApp, e o painel mostra essas perguntas para você completar as informações.</p></details>
+          <details class="reveal"><summary>Como funciona o cashback?<svg class="ico"><use href="#i-plus"/></svg></summary><p>Você define o percentual, quantos dias após a entrega o crédito é liberado, a validade, o pedido mínimo e quanto do pedido o crédito pode pagar. O cliente vê o saldo na conta e usa no checkout com um clique. Cancelamentos e devoluções ajustam o saldo automaticamente, e o crédito nunca paga o frete.</p></details>
           <details class="reveal"><summary>Serve para outros segmentos além de moda?<svg class="ico"><use href="#i-plus"/></svg></summary><p>A plataforma nasceu para moda, com grade de tamanhos e cores, mas as variações são personalizáveis e funcionam para qualquer produto com atributos. Chame a gente para avaliar o seu caso.</p></details>
         </div>
       </div>
@@ -853,7 +1019,8 @@
           <h2>Pronta para ter uma loja que trabalha por você?</h2>
           <p>Chame no WhatsApp, conte sobre a sua marca e veja a plataforma funcionando ao vivo.</p>
           <div class="hero-ctas">
-            <a class="btn btn-white" data-wa="Olá! Quero ver uma demonstração da VirtualStore." href="#">Quero uma demonstração <svg class="ico sm"><use href="#i-arrow"/></svg></a>
+            <a class="btn btn-white" href="/planos">Ver planos e assinar <svg class="ico sm"><use href="#i-arrow"/></svg></a>
+            <a class="btn btn-outline-w" data-wa="Olá! Quero ver uma demonstração da VirtualStore." href="#">Quero uma demonstração</a>
             <a class="btn btn-outline-w" href="https://www.instagram.com/budstack.tech" target="_blank" rel="noopener noreferrer"><svg class="ico sm"><use href="#i-insta"/></svg>@budstack.tech</a>
           </div>
         </div>
@@ -863,7 +1030,7 @@
 
   <footer>
     <div class="wrap">
-      <a href="#top" class="logo"><span class="logo-mark"><svg class="ico sm"><use href="#i-bag"/></svg></span><span>VirtualStore<small>by BudStack</small></span></a>
+      <a href="/" class="logo"><span class="logo-mark"><svg class="ico sm"><use href="#i-bag"/></svg></span><span>VirtualStore<small>by BudStack</small></span></a>
       <span>© <span id="year">2026</span> BudStack. Todos os direitos reservados.</span>
       <div class="links">
         <a href="https://www.instagram.com/budstack.tech" target="_blank" rel="noopener noreferrer"><svg class="ico sm"><use href="#i-insta"/></svg>Instagram</a>
@@ -914,6 +1081,19 @@
         var h = Math.floor(left / 3600), m = Math.floor(left % 3600 / 60), s = left % 60;
         cd.textContent = [h, m, s].map(function (n) { return String(n).padStart(2, "0"); }).join(":");
       }, 1000);
+
+      // Aviso de novo pedido: a etiqueta termina e o pedido fica pronto, depois recomeça
+      var npLabel = document.getElementById("npLabel"), npTrack = document.getElementById("npTrack"),
+          npStatus = document.getElementById("npStatus"), npActions = document.getElementById("npActions");
+      var npSet = function (ready) {
+        npLabel.className = ready ? "done" : "doing";
+        npTrack.textContent = ready ? "QB482913570BR" : "gerando…";
+        npStatus.className = "np-status" + (ready ? " ready" : "");
+        npStatus.innerHTML = '<span class="np-dot"></span>' + (ready ? "Pronto para preparar e despachar" : "Preparando…");
+        npActions.className = "np-actions" + (ready ? " ready" : "");
+      };
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { npSet(true); }
+      else { var npReady = false; setInterval(function () { npReady = !npReady; npSet(npReady); }, 3200); }
 
       // Prévia de cor da marca
       var box = document.getElementById("swatches");
