@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { destroyOtherSessions, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { BillingError, cancelSubscription, payUrlFor, undoCancel } from "@/lib/billing";
+import { BillingError, cancelSubscription, changePlan, pauseSubscription, payUrlFor, resumeSubscription, undoCancel } from "@/lib/billing";
 import { isValidPhone } from "@/lib/validate";
 import { onlyDigits } from "@/lib/format";
 import type { ActionState } from "@/components/ActionForm";
@@ -38,6 +38,21 @@ export async function undoCancelAction(_: ActionState, form: FormData): Promise<
   });
   if (r.ok && target) redirect(target);
   return r;
+}
+
+export async function pauseAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const user = await requireUser();
+  return run(() => pauseSubscription(String(form.get("id") ?? ""), user.id, Number(form.get("months"))));
+}
+
+export async function resumeAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const user = await requireUser();
+  return run(() => resumeSubscription(String(form.get("id") ?? ""), user.id));
+}
+
+export async function changePlanAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const user = await requireUser();
+  return run(() => changePlan(String(form.get("id") ?? ""), user.id, String(form.get("plan") ?? "")));
 }
 
 export async function payAction(_: ActionState, form: FormData): Promise<ActionState> {

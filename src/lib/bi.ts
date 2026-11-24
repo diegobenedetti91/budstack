@@ -37,6 +37,7 @@ export async function biData(days: number) {
   const paying = subs.filter((s) => s.status === "ACTIVE" || s.status === "PAST_DUE");
   const active = subs.filter((s) => s.status === "ACTIVE");
   const pastDue = subs.filter((s) => s.status === "PAST_DUE");
+  const paused = subs.filter((s) => s.status === "PAUSED");
   const canceling = active.filter((s) => s.cancelAtPeriodEnd);
   const mrr = active.reduce((a, s) => a + monthly(s), 0);
   const mrrAtRisk = pastDue.reduce((a, s) => a + monthly(s), 0) + canceling.reduce((a, s) => a + monthly(s), 0);
@@ -124,6 +125,7 @@ export async function biData(days: number) {
       arr: mrr * 12,
       active: active.length - canceling.length,
       canceling: canceling.length,
+      paused: paused.length,
       pastDue: pastDue.length,
       mrrAtRisk,
       revenue,

@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 import type { Invoice, Subscription } from "@prisma/client";
 import { prisma } from "./prisma";
 import { getSettings } from "./settings";
-import { planNames, planPriceCents, type Cycle, type PlanView } from "./plans";
+import { getPlan, planNames, planPriceCents, type Cycle, type PlanView } from "./plans";
 import {
   cancelPreapproval,
   createPreapproval,
@@ -12,6 +12,8 @@ import {
   refundPayment,
   searchAuthorizedPayments,
   searchPayments,
+  setPreapprovalAmount,
+  setPreapprovalStatus,
   siteUrl,
   type MpPayment,
 } from "./mercadopago";
@@ -25,6 +27,9 @@ import { money } from "./format";
  *  - Cancelar quando quiser, sem multa: o acesso segue até o fim do período pago e nada mais é cobrado.
  *    Dá para desfazer antes do fim do período.
  *  - Arrependimento (CDC art. 49): até N dias (padrão 7) do 1º pagamento, cancelamento com reembolso integral.
+ *  - Pausa ("congelar"): de 1 a N meses (padrão 3), começando no fim do período pago; sem cobrança na pausa;
+ *    volta sozinha (ou antes, se o cliente quiser). Uma pausa a cada N meses (padrão 6). Só ativa e em dia.
+ *  - Troca de plano: vale a partir da próxima renovação, sem cobrança dupla.
  *  - Pagamento não confirmado: assinatura "em atraso" com tolerância de N dias (padrão 7) e avisos ao cliente.
  *    Sem pagamento, é encerrada sem multa e você é avisado para suspender a loja.
  *  - O preço de cada assinatura fica congelado: mudar o preço do plano não afeta quem já assinou.
@@ -33,7 +38,7 @@ import { money } from "./format";
 export class BillingError extends Error {}
 
 const DAY = 864e5;
-const LIVE = ["PENDING", "ACTIVE", "PAST_DUE"];
+const LIVE = ["PENDING", "ACTIVE", "PAUSED", "PAST_DUE"];
 
 export function addMonths(d: Date, n: number): Date {
   const r = new Date(d);
@@ -238,19 +243,37 @@ async function onInvoicePaid(inv: Invoice, mpPaymentId: string, paidAt: Date): P
     }
   }
 
-  // Plano anual: pago antes do vencimento estende a partir do fim do período; em atraso, a partir de agora
+  // Plano anual: pago antes do vencimento estende a partir do fim do período; em atraso, a partir de agora.
+  // Pago durante a pausa: o novo ano começa quando a pausa termina (a assinatura segue pausada até lá).
   const first = !sub.paidAt;
-  const start = sub.currentPeriodEnd && sub.currentPeriodEnd > paidAt && sub.status === "ACTIVE" ? sub.currentPeriodEnd : paidAt;
+  const paused = sub.status === "PAUSED" && !!sub.pauseUntil;
+  const start = paused ? sub.pauseUntil! : sub.currentPeriodEnd && sub.currentPeriodEnd > paidAt && sub.status === "ACTIVE" ? sub.currentPeriodEnd : paidAt;
   const end = addMonths(start, 12);
   const wasLate = sub.status === "PAST_DUE" || sub.status === "EXPIRED";
   const updated = await prisma.subscription.update({
     where: { id: sub.id },
-    data: { status: "ACTIVE", paidAt: sub.paidAt ?? paidAt, mpPaymentId: sub.mpPaymentId ?? mpPaymentId, currentPeriodStart: start, currentPeriodEnd: end, graceUntil: null, endedAt: null, endedReason: null },
+    data: {
+      status: paused ? "PAUSED" : "ACTIVE",
+      paidAt: sub.paidAt ?? paidAt,
+      mpPaymentId: sub.mpPaymentId ?? mpPaymentId,
+      currentPeriodStart: start,
+      currentPeriodEnd: end,
+      graceUntil: null,
+      endedAt: null,
+      endedReason: null,
+      ...(!first ? applyNextPlan(sub) : {}),
+    },
   });
   await prisma.invoice.update({ where: { id: inv.id }, data: { periodStart: start, periodEnd: end } });
   await event(sub.id, first ? "paid" : "renewed", inv.amountCents);
-  if (first) await afterFirstPayment(updated, name);
-  else await afterRenewal(updated, name, inv.amountCents, wasLate);
+  const newName = await planName(updated.plan);
+  if (first) await afterFirstPayment(updated, newName);
+  else await afterRenewal(updated, newName, inv.amountCents, wasLate);
+}
+
+/** Troca de plano agendada: aplica na renovação. */
+function applyNextPlan(sub: Subscription) {
+  return sub.nextPlan && sub.nextPlanPriceCents ? { plan: sub.nextPlan, planPriceCents: sub.nextPlanPriceCents, nextPlan: null, nextPlanPriceCents: null } : {};
 }
 
 async function afterFirstPayment(sub: Subscription, name: string) {
@@ -319,6 +342,10 @@ async function reconcileMonthly(sub: Subscription): Promise<void> {
   if (pre.status === "cancelled" && LIVE.includes(sub.status) && !sub.cancelAtPeriodEnd) {
     if (sub.status === "PENDING") await endSubscription(sub, "CANCELED", "not_paid");
     else if (sub.status === "PAST_DUE") await expire(sub);
+    else if (sub.status === "PAUSED") {
+      await endSubscription(sub, "CANCELED", "canceled");
+      await notifyOwner(`Assinatura cancelada no Mercado Pago: ${sub.storeName}`, `Estava pausada; foi encerrada.\n\n${subscriptionSummary(sub, await planName(sub.plan))}`);
+    }
     else {
       await prisma.subscription.update({ where: { id: sub.id }, data: { cancelAtPeriodEnd: true, canceledAt: new Date(), cancelReason: "Cancelada no Mercado Pago" } });
       sub.cancelAtPeriodEnd = true;
@@ -338,7 +365,7 @@ async function onMonthlyCharge(sub: Subscription, paidAt: Date, amountCents: num
   const end = addMonths(paidAt, 1);
   const updated = await prisma.subscription.update({
     where: { id: sub.id },
-    data: { status: "ACTIVE", paidAt: sub.paidAt ?? paidAt, currentPeriodStart: paidAt, currentPeriodEnd: end, graceUntil: null, endedAt: null, endedReason: null },
+    data: { status: "ACTIVE", paidAt: sub.paidAt ?? paidAt, currentPeriodStart: paidAt, currentPeriodEnd: end, graceUntil: null, endedAt: null, endedReason: null, ...(!first ? applyNextPlan(sub) : {}) },
   });
   Object.assign(sub, updated);
   await event(sub.id, first ? "paid" : "renewed", amountCents);
@@ -421,8 +448,8 @@ export async function refundableInvoices(sub: Subscription): Promise<Invoice[]> 
 /**
  * Cancelar. `userId` null = feito pelo administrador.
  *  - refund: dentro do prazo de arrependimento, estorna tudo e encerra na hora.
- *  - aguardando 1º pagamento ou em atraso: encerra na hora, sem cobrar nada.
- *  - ativa: acesso até o fim do período, sem novas cobranças (pode desfazer).
+ *  - aguardando 1º pagamento, em atraso ou pausada: encerra na hora, sem cobrar nada.
+ *  - ativa: acesso até o fim do período, sem novas cobranças (pode desfazer). Pausa e troca de plano agendadas são desfeitas.
  */
 export async function cancelSubscription(subId: string, userId: string | null, opts: { refund?: boolean; reason?: string } = {}): Promise<string> {
   const sub = await ownedSubscription(subId, userId);
@@ -452,16 +479,20 @@ export async function cancelSubscription(subId: string, userId: string | null, o
     return `Assinatura cancelada e ${money(total)} estornados.`;
   }
 
-  if (sub.status === "PENDING" || sub.status === "PAST_DUE") {
-    await prisma.subscription.update({ where: { id: sub.id }, data: { canceledAt: new Date(), cancelReason: reason } });
+  if (sub.status === "PENDING" || sub.status === "PAST_DUE" || sub.status === "PAUSED") {
+    const was = sub.status === "PAST_DUE" ? "em atraso" : sub.status === "PAUSED" ? "pausada" : "aguardando pagamento";
+    await prisma.subscription.update({ where: { id: sub.id }, data: { canceledAt: new Date(), cancelReason: reason, pauseFrom: null, pauseUntil: null, nextPlan: null, nextPlanPriceCents: null } });
     await endSubscription(sub, "CANCELED", "canceled");
     await emailCustomer(sub.customerEmail, "Assinatura cancelada", ["Assinatura cancelada", `Cancelamos a assinatura da loja ${sub.storeName}. Nenhuma cobrança em aberto será feita.`]);
-    if (sub.paidAt) await notifyOwner(`Assinatura cancelada: ${sub.storeName}`, `Encerrada na hora (estava ${sub.status === "PAST_DUE" ? "em atraso" : "aguardando pagamento"}). Suspenda a loja.${reason ? `\nMotivo: ${reason}` : ""}\n\n${subscriptionSummary(sub, name)}`);
+    if (sub.paidAt) await notifyOwner(`Assinatura cancelada: ${sub.storeName}`, `Encerrada na hora (estava ${was}). Suspenda a loja.${reason ? `\nMotivo: ${reason}` : ""}\n\n${subscriptionSummary(sub, name)}`);
     return "Assinatura cancelada. Nada será cobrado.";
   }
 
   await stopCharging(sub);
-  await prisma.subscription.update({ where: { id: sub.id }, data: { cancelAtPeriodEnd: true, canceledAt: new Date(), cancelReason: reason } });
+  await prisma.subscription.update({
+    where: { id: sub.id },
+    data: { cancelAtPeriodEnd: true, canceledAt: new Date(), cancelReason: reason, pauseFrom: null, pauseUntil: null, lastPauseAt: sub.pauseFrom ? null : sub.lastPauseAt, nextPlan: null, nextPlanPriceCents: null },
+  });
   await event(sub.id, "cancel_requested", 0, reason ?? undefined);
   await emailCustomer(sub.customerEmail, "Cancelamento confirmado", [
     "Cancelamento confirmado",
@@ -519,15 +550,156 @@ async function ensureRenewalInvoice(sub: Subscription, maxInstallments: number):
   const open = await prisma.invoice.findFirst({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING", createdAt: { gte: sub.currentPeriodStart ?? sub.createdAt } } });
   if (open) return open;
   const s = await getSettings();
-  const due = sub.currentPeriodEnd ?? new Date();
+  const due = (sub.status === "PAUSED" ? sub.pauseUntil : sub.currentPeriodEnd) ?? new Date();
   return createPaymentInvoice(sub, {
     kind: "PLAN",
-    amountCents: sub.planPriceCents,
+    amountCents: sub.nextPlanPriceCents ?? sub.planPriceCents,
     dueDate: due,
-    title: `Renovação VirtualStore ${await planName(sub.plan)} · anual`,
+    title: `Renovação VirtualStore ${await planName(sub.nextPlan ?? sub.plan)} · anual`,
     maxInstallments,
     expiresAt: addDays(due, s.grace_days + 1),
   });
+}
+
+// ───────── Pausa ("congelar") e troca de plano ─────────
+
+/** Pausar de 1 a N meses a partir do fim do período pago. Sem cobrança na pausa; volta sozinha. */
+export async function pauseSubscription(subId: string, userId: string, months: number): Promise<string> {
+  const sub = await ownedSubscription(subId, userId);
+  const s = await getSettings();
+  if (sub.status !== "ACTIVE" || !sub.currentPeriodEnd) throw new BillingError("Só dá para pausar uma assinatura ativa e em dia.");
+  if (sub.cancelAtPeriodEnd) throw new BillingError("A assinatura já está cancelada.");
+  if (sub.pauseFrom) throw new BillingError("Já existe uma pausa agendada.");
+  if (!Number.isInteger(months) || months < 1 || months > s.pause_max_months) throw new BillingError(`Escolha de 1 a ${s.pause_max_months} ${s.pause_max_months === 1 ? "mês" : "meses"}.`);
+  if (s.pause_cooldown_months > 0 && sub.lastPauseAt) {
+    const next = addMonths(sub.lastPauseAt, s.pause_cooldown_months);
+    if (new Date() < next) throw new BillingError(`Você pode pausar de novo a partir de ${dateBR(next)}.`);
+  }
+  // Mensal: a assinatura no Mercado Pago para de cobrar já (o período atual está pago)
+  if (sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") {
+    await setPreapprovalStatus(sub.mpPreapprovalId, "paused");
+    await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "paused" } });
+  }
+  // Anual: link de renovação já gerado deixa de valer (é refeito perto do fim da pausa)
+  await prisma.invoice.updateMany({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING" }, data: { status: "CANCELED" } });
+
+  const from = sub.currentPeriodEnd;
+  const until = addMonths(from, months);
+  await prisma.subscription.update({ where: { id: sub.id }, data: { pauseFrom: from, pauseUntil: until, lastPauseAt: new Date() } });
+  await event(sub.id, "pause_scheduled", 0, `${months} ${months === 1 ? "mês" : "meses"}: ${dateBR(from)} a ${dateBR(until)}`);
+  await emailCustomer(sub.customerEmail, "Pausa agendada", [
+    "Pausa agendada",
+    `Sua loja ${sub.storeName} funciona normalmente até ${dateBR(from)}. Depois disso, a assinatura fica pausada até ${dateBR(until)}, sem nenhuma cobrança.`,
+    `Em ${dateBR(until)} ela volta sozinha. Quer voltar antes? É só retomar na sua área de cliente.`,
+  ], { label: "Ver minha assinatura", url: "/conta" });
+  await notifyOwner(`Pausa agendada: ${sub.storeName}`, `De ${dateBR(from)} a ${dateBR(until)} (${months} ${months === 1 ? "mês" : "meses"}). Suspenda a loja durante a pausa.\n\n${subscriptionSummary(sub, await planName(sub.plan))}`);
+  return `Pausa agendada de ${dateBR(from)} a ${dateBR(until)}. Nada será cobrado nesse período.`;
+}
+
+/** Retomar: desfaz a pausa agendada ou volta agora de uma pausa em andamento. */
+export async function resumeSubscription(subId: string, userId: string): Promise<string> {
+  const sub = await ownedSubscription(subId, userId);
+  if (sub.status === "ACTIVE" && sub.pauseFrom) {
+    if (sub.mpPreapprovalId && sub.mpSubscriptionStatus === "paused") {
+      await setPreapprovalStatus(sub.mpPreapprovalId, "authorized");
+      await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "authorized" } });
+    }
+    await prisma.subscription.update({ where: { id: sub.id }, data: { pauseFrom: null, pauseUntil: null, lastPauseAt: null } });
+    await event(sub.id, "pause_canceled");
+    await notifyOwner(`Pausa cancelada: ${sub.storeName}`, `A assinatura segue normalmente.\n\n${subscriptionSummary(sub, await planName(sub.plan))}`);
+    return "Pausa cancelada: a assinatura segue normalmente.";
+  }
+  if (sub.status === "PAUSED") {
+    await restart(sub, new Date());
+    return sub.cycle === "MENSAL" ? "Assinatura retomada: a cobrança mensal volta no seu cartão." : "Assinatura retomada.";
+  }
+  throw new BillingError("A assinatura não está pausada.");
+}
+
+/** Começo da pausa (fim do período pago). */
+async function startPause(sub: Subscription): Promise<void> {
+  await prisma.subscription.update({ where: { id: sub.id }, data: { status: "PAUSED" } });
+  sub.status = "PAUSED";
+  await event(sub.id, "paused", 0, `até ${dateBR(sub.pauseUntil)}`);
+  await emailCustomer(sub.customerEmail, "Sua assinatura está pausada", [
+    "Sua assinatura está pausada",
+    `Nenhuma cobrança será feita até ${dateBR(sub.pauseUntil)}, quando ela volta sozinha. Quer voltar antes? Retome na sua área de cliente.`,
+  ], { label: "Ver minha assinatura", url: "/conta" });
+  await notifyOwner(`Pausa começou: ${sub.storeName}`, `Suspenda a loja até ${dateBR(sub.pauseUntil)}.\n\n${subscriptionSummary(sub, await planName(sub.plan))}`);
+}
+
+/** Volta da pausa: assinatura ativa de novo a partir de `start`, com a cobrança do novo período. */
+async function restart(sub: Subscription, start: Date): Promise<void> {
+  const name = await planName(sub.nextPlan ?? sub.plan);
+  const prepaid = sub.cycle === "ANUAL" && !!sub.currentPeriodEnd && sub.currentPeriodEnd > start && !!sub.pauseUntil && sub.currentPeriodStart?.getTime() === sub.pauseUntil.getTime();
+  if (sub.mpPreapprovalId && sub.mpSubscriptionStatus === "paused") {
+    try {
+      await setPreapprovalStatus(sub.mpPreapprovalId, "authorized");
+      await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "authorized" } });
+    } catch (err) {
+      console.error("[billing] não foi possível retomar no Mercado Pago:", err);
+    }
+  }
+  const updated = await prisma.subscription.update({
+    where: { id: sub.id },
+    data: {
+      status: "ACTIVE",
+      pauseFrom: null,
+      pauseUntil: null,
+      // Período novo começa agora; o mensal é cobrado pelo Mercado Pago, o anual paga a renovação
+      ...(prepaid ? {} : { currentPeriodStart: start, currentPeriodEnd: start, ...applyNextPlan(sub) }),
+    },
+  });
+  Object.assign(sub, updated);
+  await event(sub.id, "resumed");
+  await emailCustomer(sub.customerEmail, "Sua assinatura voltou", [
+    "Sua assinatura voltou",
+    prepaid
+      ? `A pausa terminou e a loja ${sub.storeName} está ativa de novo, até ${dateBR(sub.currentPeriodEnd)}.`
+      : sub.cycle === "MENSAL"
+        ? `A pausa terminou e a loja ${sub.storeName} está ativa de novo. A mensalidade do plano ${name} volta a ser cobrada no seu cartão.`
+        : `A pausa terminou. Para manter a loja ${sub.storeName} no ar, pague a renovação na sua área de cliente.`,
+  ], { label: "Ver minha assinatura", url: "/conta" });
+  await notifyOwner(`Pausa terminou: ${sub.storeName}`, `Reative a loja.\n\n${subscriptionSummary(sub, name)}`);
+  if (sub.cycle === "ANUAL" && !prepaid) {
+    const s = await getSettings();
+    await ensureRenewalInvoice(sub, s.annual_max_installments);
+    await markPastDue(sub, "A pausa terminou e a renovação anual ainda não foi paga.");
+  }
+}
+
+/** Trocar de plano: vale a partir da próxima renovação, sem cobrança dupla. Escolher o plano atual desfaz a troca. */
+export async function changePlan(subId: string, userId: string, planId: string): Promise<string> {
+  const sub = await ownedSubscription(subId, userId);
+  if (sub.status !== "ACTIVE" || sub.cancelAtPeriodEnd) throw new BillingError("A troca de plano fica disponível com a assinatura ativa.");
+  const s = await getSettings();
+  const renewal = dateBR(sub.pauseUntil ?? sub.currentPeriodEnd);
+
+  if (planId === sub.plan) {
+    if (!sub.nextPlan) throw new BillingError("Esse já é o seu plano.");
+    if (sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") await setPreapprovalAmount(sub.mpPreapprovalId, sub.planPriceCents);
+    await prisma.invoice.updateMany({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING" }, data: { status: "CANCELED" } });
+    await prisma.subscription.update({ where: { id: sub.id }, data: { nextPlan: null, nextPlanPriceCents: null } });
+    await event(sub.id, "plan_change_canceled");
+    return `Troca cancelada: você continua no plano ${await planName(sub.plan)}.`;
+  }
+
+  const plan = await getPlan(planId, { activeOnly: true });
+  if (!plan) throw new BillingError("Plano não encontrado.");
+  const price = planPriceCents(plan, sub.cycle as Cycle, s);
+  if (sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") await setPreapprovalAmount(sub.mpPreapprovalId, price);
+  // Anual: link de renovação com o valor antigo deixa de valer (é refeito com o novo)
+  await prisma.invoice.updateMany({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING" }, data: { status: "CANCELED" } });
+  await prisma.subscription.update({ where: { id: sub.id }, data: { nextPlan: plan.id, nextPlanPriceCents: price } });
+  const from = await planName(sub.plan);
+  await event(sub.id, "plan_change", price, `${from} → ${plan.name}`);
+  const per = sub.cycle === "ANUAL" ? "/ano" : "/mês";
+  await emailCustomer(sub.customerEmail, "Troca de plano agendada", [
+    "Troca de plano agendada",
+    `A partir de ${renewal}, a loja ${sub.storeName} passa do plano ${from} para o ${plan.name}, por ${money(price)}${per}. Até lá nada muda e não há cobrança extra.`,
+  ], { label: "Ver minha assinatura", url: "/conta" });
+  await notifyOwner(`Troca de plano agendada: ${sub.storeName}`, `${from} → ${plan.name} (${money(price)}${per}) a partir de ${renewal}. Ajuste os recursos da loja nessa data.\n\n${subscriptionSummary(sub, from)}`);
+  return `A partir de ${renewal} você passa para o plano ${plan.name} (${money(price)}${per}), sem cobrança dupla.`;
 }
 
 // ───────── Rotina diária ─────────
@@ -555,6 +727,30 @@ export async function runBillingJobs(now = new Date()): Promise<Record<string, n
         continue;
       }
 
+      if (sub.status === "ACTIVE" && sub.pauseFrom && now >= sub.pauseFrom) {
+        // startPause muda o status para PAUSED: segue para o bloco abaixo na mesma rodada
+        await startPause(sub);
+        count.paused = (count.paused ?? 0) + 1;
+      }
+
+      if (sub.status === "PAUSED") {
+        if (sub.pauseUntil && now >= sub.pauseUntil) {
+          await restart(sub, sub.pauseUntil);
+          count.resumed = (count.resumed ?? 0) + 1;
+        } else if (sub.cycle === "ANUAL" && sub.pauseUntil && sub.pauseUntil.getTime() - now.getTime() <= s.renewal_notice_days * DAY && !(sub.currentPeriodEnd && sub.currentPeriodEnd > sub.pauseUntil)) {
+          const inv = await ensureRenewalInvoice(sub, s.annual_max_installments);
+          if (await addReminder(sub, `pause_renew:${sub.pauseUntil.toISOString().slice(0, 10)}`)) {
+            await emailCustomer(sub.customerEmail, "Sua pausa está terminando", [
+              "Sua pausa está terminando",
+              `A pausa da loja ${sub.storeName} termina em ${dateBR(sub.pauseUntil)}. Para ela voltar ao ar, pague a renovação de ${money(inv.amountCents)} no Pix ou em até ${s.annual_max_installments}x no cartão.`,
+              "Não quer continuar? Você pode cancelar na sua área de cliente; nada será cobrado.",
+            ], { label: "Pagar renovação", url: inv.payUrl ?? "/conta" });
+            count.renewals++;
+          }
+        }
+        continue;
+      }
+
       if (sub.status === "ACTIVE" && sub.currentPeriodEnd) {
         const end = sub.currentPeriodEnd;
         if (now >= end) {
@@ -577,7 +773,7 @@ export async function runBillingJobs(now = new Date()): Promise<Record<string, n
           continue;
         }
         // Anual: link da renovação alguns dias antes, com lembrete a 3 dias
-        if (sub.cycle === "ANUAL" && !sub.cancelAtPeriodEnd && end.getTime() - now.getTime() <= s.renewal_notice_days * DAY) {
+        if (sub.cycle === "ANUAL" && !sub.cancelAtPeriodEnd && !sub.pauseFrom && end.getTime() - now.getTime() <= s.renewal_notice_days * DAY) {
           const inv = await ensureRenewalInvoice(sub, s.annual_max_installments);
           const key = `renew:${end.toISOString().slice(0, 10)}`;
           const soon = end.getTime() - now.getTime() <= 3 * DAY;

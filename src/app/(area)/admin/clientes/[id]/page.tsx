@@ -23,7 +23,7 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
     refundableInvoices(s),
     s.userId ? prisma.subscription.findMany({ where: { userId: s.userId, id: { not: s.id } }, select: { id: true, storeName: true, status: true, cancelAtPeriodEnd: true } }) : [],
   ]);
-  const live = ["PENDING", "ACTIVE", "PAST_DUE"].includes(s.status);
+  const live = ["PENDING", "ACTIVE", "PAUSED", "PAST_DUE"].includes(s.status);
   const paidTotal = s.invoices.filter((i) => i.status === "PAID").reduce((a, i) => a + i.amountCents, 0);
 
   return (
@@ -41,6 +41,17 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
       </p>
 
       {s.status === "PAST_DUE" && <div className="note-box bad">Inadimplente: tolerância até {dateBR(s.graceUntil)}. Sem pagamento, a assinatura é encerrada e você recebe o aviso para suspender a loja.</div>}
+      {(s.status === "PAUSED" || s.pauseFrom) && (
+        <div className="note-box info">
+          {s.status === "PAUSED" ? "Pausada" : "Pausa agendada"} de {dateBR(s.pauseFrom)} a {dateBR(s.pauseUntil)}: mantenha a loja suspensa nesse período e reative quando a pausa terminar.
+        </div>
+      )}
+      {s.nextPlan && (
+        <div className="note-box info">
+          Troca de plano agendada para {dateBR(s.pauseUntil ?? s.currentPeriodEnd)}: {names.get(s.plan) ?? s.plan} → {names.get(s.nextPlan) ?? s.nextPlan} ({money(s.nextPlanPriceCents ?? 0)}
+          {priceSuffix(s.cycle)}). Ajuste os recursos da loja nessa data.
+        </div>
+      )}
       {s.cancelAtPeriodEnd && s.status === "ACTIVE" && <div className="note-box warn">Cancelamento agendado{s.cancelReason ? ` (${s.cancelReason})` : ""}: a loja fica no ar até {dateBR(s.currentPeriodEnd)}.</div>}
 
       <div className="detail">

@@ -123,8 +123,16 @@ model Subscription {
   /// Valor da primeira cobrança (anual: plano + domínio; mensal: só a mensalidade)
   totalCents     Int
 
-  /// PENDING (aguardando 1º pagamento) | ACTIVE | PAST_DUE (inadimplente, na tolerância) | CANCELED | EXPIRED (encerrada por falta de pagamento)
+  /// PENDING (aguardando 1º pagamento) | ACTIVE | PAUSED (congelada) | PAST_DUE (inadimplente, na tolerância) | CANCELED | EXPIRED (encerrada por falta de pagamento)
   status             String    @default("PENDING")
+  /// Pausa ("congelar"): começa no fim do período pago e termina sozinha
+  pauseFrom          DateTime?
+  pauseUntil         DateTime?
+  /// Última pausa pedida (limita uma pausa a cada N meses)
+  lastPauseAt        DateTime?
+  /// Troca de plano agendada para a próxima renovação (preço congelado na troca)
+  nextPlan           String?
+  nextPlanPriceCents Int?
   paidAt             DateTime?
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?

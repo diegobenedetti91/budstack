@@ -59,7 +59,7 @@ export default async function BiPage({ searchParams }: { searchParams: Promise<{
 
       <h2 className="section-title">Base de clientes</h2>
       <div className="kpis">
-        <Kpi label="Ativos" value={int(k.active)} hint={k.canceling ? `+${k.canceling} com cancelamento agendado` : undefined} />
+        <Kpi label="Ativos" value={int(k.active)} hint={[k.canceling ? `+${k.canceling} cancelando` : "", k.paused ? `${k.paused} pausada(s)` : ""].filter(Boolean).join(" · ") || undefined} />
         <Kpi label="Inadimplentes" value={int(k.pastDue)} hint={`em risco: ${money(k.mrrAtRisk)}/mês`} />
         <Kpi label="Novas assinaturas" value={int(k.newPaid)} hint="pagas no período" />
         <Kpi label="Churn" value={pct(k.churnRate)} hint={`${int(k.churned)} encerrada(s) no período`} />

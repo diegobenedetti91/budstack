@@ -5,6 +5,7 @@ import { stageLabel } from "@/lib/format";
 export function subscriptionState(s: Pick<Subscription, "status" | "cancelAtPeriodEnd">): { label: string; tone: string } {
   if (s.status === "ACTIVE") return s.cancelAtPeriodEnd ? { label: "Cancelamento agendado", tone: "amber" } : { label: "Ativa", tone: "green" };
   if (s.status === "PAST_DUE") return { label: "Inadimplente", tone: "red" };
+  if (s.status === "PAUSED") return { label: "Pausada", tone: "blue" };
   if (s.status === "PENDING") return { label: "Aguardando pagamento", tone: "amber" };
   if (s.status === "EXPIRED") return { label: "Encerrada (sem pagamento)", tone: "gray" };
   return { label: "Cancelada", tone: "gray" };
@@ -50,4 +51,10 @@ export const EVENT_LABEL: Record<string, string> = {
   refunded: "Reembolso",
   expired: "Encerrada por falta de pagamento",
   paid_after_cancel: "Pagamento após cancelamento",
+  pause_scheduled: "Pausa agendada",
+  pause_canceled: "Pausa cancelada",
+  paused: "Pausa começou",
+  resumed: "Assinatura retomada",
+  plan_change: "Troca de plano agendada",
+  plan_change_canceled: "Troca de plano cancelada",
 };

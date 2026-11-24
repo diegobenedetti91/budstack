@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth";
 import { formatDocument, formatPhone } from "@/lib/format";
 import { ActionForm } from "@/components/ActionForm";
+import { PasswordInput } from "@/components/PasswordInput";
+import { Card, CardHeader, PageHeader } from "@/components/ui";
 import { changePasswordAction, saveProfileAction } from "../actions";
 
 export const metadata: Metadata = { title: "Meus dados" };
@@ -10,55 +12,58 @@ export default async function DadosPage() {
   const user = await requireUser();
   return (
     <>
-      <h1>Meus dados</h1>
-      <p className="page-sub">Seus dados de contato e a senha de acesso.</p>
+      <PageHeader title="Meus dados" subtitle="Seus dados de contato e a senha de acesso." />
 
-      <div className="detail" style={{ gridTemplateColumns: "1fr 1fr" }}>
-        <section className="card">
-          <h2>Contato</h2>
-          <ActionForm action={saveProfileAction}>
-            <div className="field">
-              <label htmlFor="name">Nome completo</label>
-              <input id="name" name="name" defaultValue={user.name} autoComplete="name" required />
-            </div>
-            <div className="field">
-              <label htmlFor="phone">WhatsApp</label>
-              <input id="phone" name="phone" type="tel" defaultValue={user.phone ? formatPhone(user.phone) : ""} autoComplete="tel" required />
-            </div>
-            <div className="field">
-              <label htmlFor="email">E-mail (login)</label>
-              <input id="email" value={user.email} readOnly disabled />
-              <span className="hint">Para trocar o e-mail, fale com a BudStack.</span>
-            </div>
-            {user.document && (
+      <div className="ui-grid-2" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <Card>
+          <CardHeader title="Contato" subtitle="Usado nos avisos da assinatura e da sua loja" icon="user" />
+          <div className="ui-card-body">
+            <ActionForm action={saveProfileAction}>
               <div className="field">
-                <label>CPF/CNPJ</label>
-                <input value={formatDocument(user.document)} readOnly disabled />
+                <label htmlFor="name">Nome completo</label>
+                <input id="name" name="name" defaultValue={user.name} autoComplete="name" required />
               </div>
-            )}
-            <button className="btn btn-primary btn-sm">Salvar</button>
-          </ActionForm>
-        </section>
+              <div className="field">
+                <label htmlFor="phone">WhatsApp</label>
+                <input id="phone" name="phone" type="tel" defaultValue={user.phone ? formatPhone(user.phone) : ""} autoComplete="tel" required />
+              </div>
+              <div className="field">
+                <label htmlFor="email">E-mail (login)</label>
+                <input id="email" value={user.email} readOnly disabled />
+                <span className="hint">Para trocar o e-mail, fale com a BudStack.</span>
+              </div>
+              {user.document && (
+                <div className="field">
+                  <label htmlFor="doc">CPF/CNPJ</label>
+                  <input id="doc" value={formatDocument(user.document)} readOnly disabled />
+                </div>
+              )}
+              <button className="ui-btn primary">Salvar</button>
+            </ActionForm>
+          </div>
+        </Card>
 
-        <section className="card">
-          <h2>Senha</h2>
-          <ActionForm action={changePasswordAction}>
-            <div className="field">
-              <label htmlFor="current">Senha atual</label>
-              <input id="current" name="current" type="password" autoComplete="current-password" required />
-            </div>
-            <div className="field">
-              <label htmlFor="password">Nova senha</label>
-              <input id="password" name="password" type="password" autoComplete="new-password" minLength={8} required />
-              <span className="hint">Pelo menos 8 caracteres.</span>
-            </div>
-            <div className="field">
-              <label htmlFor="confirm">Repita a nova senha</label>
-              <input id="confirm" name="confirm" type="password" autoComplete="new-password" minLength={8} required />
-            </div>
-            <button className="btn btn-primary btn-sm">Trocar senha</button>
-          </ActionForm>
-        </section>
+        <Card>
+          <CardHeader title="Senha" subtitle="Ao trocar, os outros aparelhos são desconectados" icon="lock" />
+          <div className="ui-card-body">
+            <ActionForm action={changePasswordAction}>
+              <div className="field">
+                <label htmlFor="current">Senha atual</label>
+                <PasswordInput id="current" name="current" autoComplete="current-password" required />
+              </div>
+              <div className="field">
+                <label htmlFor="password">Nova senha</label>
+                <PasswordInput id="password" name="password" autoComplete="new-password" minLength={8} required />
+                <span className="hint">Pelo menos 8 caracteres.</span>
+              </div>
+              <div className="field">
+                <label htmlFor="confirm">Repita a nova senha</label>
+                <PasswordInput id="confirm" name="confirm" autoComplete="new-password" minLength={8} required />
+              </div>
+              <button className="ui-btn primary">Trocar senha</button>
+            </ActionForm>
+          </div>
+        </Card>
       </div>
     </>
   );

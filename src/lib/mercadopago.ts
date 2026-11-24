@@ -116,6 +116,19 @@ export async function cancelPreapproval(id: string): Promise<void> {
   await mp(`/preapproval/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify({ status: "cancelled" }) });
 }
 
+/** Pausa (status "paused": sem cobranças) ou retoma (status "authorized") a assinatura mensal. */
+export async function setPreapprovalStatus(id: string, status: "paused" | "authorized"): Promise<void> {
+  await mp(`/preapproval/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify({ status }) });
+}
+
+/** Novo valor da mensalidade: vale a partir da próxima cobrança. */
+export async function setPreapprovalAmount(id: string, amountCents: number): Promise<void> {
+  await mp(`/preapproval/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify({ auto_recurring: { transaction_amount: amountCents / 100, currency_id: "BRL" } }),
+  });
+}
+
 /** Estorno integral de um pagamento. */
 export async function refundPayment(paymentId: string, key: string): Promise<void> {
   await mp(`/v1/payments/${encodeURIComponent(paymentId)}/refunds`, { method: "POST", idempotencyKey: `refund-${key}`, body: "{}" });

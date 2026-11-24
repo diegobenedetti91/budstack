@@ -8,7 +8,8 @@ export default async function RedefinirPage({ searchParams }: { searchParams: Pr
   const { token } = await searchParams;
   return (
     <>
-      <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Criar nova senha</h1>
+      <h1 className="auth2-title">Criar nova senha</h1>
+      <p className="auth2-sub">Escolha uma senha com pelo menos 8 caracteres.</p>
       {token && /^[\w-]{20,100}$/.test(token) ? (
         <ResetPasswordForm token={token} />
       ) : (

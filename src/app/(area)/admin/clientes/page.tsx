@@ -7,14 +7,16 @@ import { dateBR } from "@/lib/billing";
 import { cycleLabel, money } from "@/lib/format";
 import { sourceLabel } from "@/lib/tracking";
 import { DomainBadge, StageBadge, StatusBadge } from "@/components/Badges";
+import { PageHeader } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Clientes" };
 
 const TABS = [
   { id: "ativos", label: "Ativos", where: { status: "ACTIVE", cancelAtPeriodEnd: false } },
   { id: "inadimplentes", label: "Inadimplentes", where: { status: "PAST_DUE" } },
+  { id: "pausados", label: "Pausados", where: { OR: [{ status: "PAUSED" }, { status: "ACTIVE", pauseFrom: { not: null } }] } },
   { id: "cancelando", label: "Cancelamento agendado", where: { status: "ACTIVE", cancelAtPeriodEnd: true } },
-  { id: "implantar", label: "Para implantar", where: { status: { in: ["ACTIVE", "PAST_DUE"] }, stage: { in: ["NOVO", "CONFIGURANDO"] } } },
+  { id: "implantar", label: "Para implantar", where: { status: { in: ["ACTIVE", "PAST_DUE", "PAUSED"] }, stage: { in: ["NOVO", "CONFIGURANDO"] } } },
   { id: "pendentes", label: "Aguardando pagamento", where: { status: "PENDING" } },
   { id: "encerrados", label: "Encerrados", where: { status: { in: ["CANCELED", "EXPIRED"] }, paidAt: { not: null } } },
   { id: "todos", label: "Todos", where: {} },
@@ -36,8 +38,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <h1>Clientes</h1>
-      <p className="page-sub">Assinaturas por situação. Clique na loja para ver pagamentos, histórico e implantação.</p>
+      <PageHeader title="Clientes" subtitle="Assinaturas por situação. Clique na loja para ver pagamentos, histórico e implantação." />
 
       <div className="toolbar">
         <nav className="tabs" aria-label="Filtro" style={{ margin: 0 }}>
@@ -64,7 +65,7 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
                 <th>Loja / cliente</th>
                 <th>Plano</th>
                 <th>Situação</th>
-                <th>{tab.id === "inadimplentes" ? "Tolerância até" : "Vence / até"}</th>
+                <th>{tab.id === "inadimplentes" ? "Tolerância até" : tab.id === "pausados" ? "Pausa" : "Vence / até"}</th>
                 <th>Domínio</th>
                 <th>Implantação</th>
                 <th>Origem</th>
@@ -90,7 +91,10 @@ export default async function ClientesPage({ searchParams }: { searchParams: Pro
                   <td>
                     <StatusBadge sub={s} />
                   </td>
-                  <td>{s.status === "PAST_DUE" ? dateBR(s.graceUntil) : s.status === "ACTIVE" ? dateBR(s.currentPeriodEnd) : <small>{dateBR(s.endedAt ?? s.createdAt)}</small>}</td>
+                  <td>
+                    {s.status === "PAST_DUE" ? dateBR(s.graceUntil) : s.status === "PAUSED" || s.pauseFrom ? `${dateBR(s.pauseFrom)} a ${dateBR(s.pauseUntil)}` : s.status === "ACTIVE" ? dateBR(s.currentPeriodEnd) : <small>{dateBR(s.endedAt ?? s.createdAt)}</small>}
+                    {s.nextPlan && <small>troca → {names.get(s.nextPlan) ?? s.nextPlan}</small>}
+                  </td>
                   <td>
                     <b style={{ fontWeight: 600 }}>{s.domain}</b>
                     <DomainBadge option={s.domainOption} paid={!!s.domainPaidAt} />

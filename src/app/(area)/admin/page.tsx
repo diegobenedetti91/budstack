@@ -5,6 +5,7 @@ import { planNames } from "@/lib/plans";
 import { dateBR, runBillingJobsThrottled } from "@/lib/billing";
 import { money } from "@/lib/format";
 import { StageBadge } from "@/components/Badges";
+import { PageHeader } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Visão geral" };
 
@@ -15,7 +16,7 @@ export default async function AdminHome() {
   await runBillingJobsThrottled();
 
   const since30 = new Date(Date.now() - 30 * 864e5);
-  const [active, pastDue, canceling, toSetup, pending, revenue30, names] = await Promise.all([
+  const [active, pastDue, canceling, toSetup, pending, revenue30, names, paused] = await Promise.all([
     prisma.subscription.findMany({ where: { status: "ACTIVE" }, select: { cycle: true, planPriceCents: true } }),
     prisma.subscription.findMany({ where: { status: "PAST_DUE" }, orderBy: { graceUntil: "asc" } }),
     prisma.subscription.findMany({ where: { status: "ACTIVE", cancelAtPeriodEnd: true }, orderBy: { currentPeriodEnd: "asc" } }),
@@ -23,6 +24,7 @@ export default async function AdminHome() {
     prisma.subscription.count({ where: { status: "PENDING" } }),
     prisma.invoice.aggregate({ where: { status: "PAID", paidAt: { gte: since30 } }, _sum: { amountCents: true } }),
     planNames(),
+    prisma.subscription.findMany({ where: { OR: [{ status: "PAUSED" }, { status: "ACTIVE", pauseFrom: { not: null } }] }, orderBy: { pauseFrom: "asc" } }),
   ]);
   const mrr = active.reduce((a, s) => a + monthly(s), 0);
 
@@ -55,8 +57,7 @@ export default async function AdminHome() {
 
   return (
     <>
-      <h1>Visão geral</h1>
-      <p className="page-sub">O que precisa da sua atenção hoje.</p>
+      <PageHeader title="Visão geral" subtitle="O que precisa da sua atenção hoje." />
 
       <div className="kpis">
         <div className="kpi">
@@ -81,6 +82,7 @@ export default async function AdminHome() {
         <List title="Inadimplentes" rows={pastDue} empty="Ninguém em atraso." right={(s) => <span className="badge red">até {dateBR(s.graceUntil)}</span>} />
         <List title="Para implantar" rows={toSetup} empty="Nenhuma loja esperando implantação." right={(s) => <StageBadge stage={s.stage} />} />
         <List title="Cancelamentos agendados" rows={canceling} empty="Nenhum cancelamento agendado." right={(s) => <span className="muted">no ar até {dateBR(s.currentPeriodEnd)}</span>} />
+        <List title="Pausas" rows={paused} empty="Nenhuma loja pausada." right={(s) => <span className="badge blue">{s.status === "PAUSED" ? "até" : "a partir de"} {dateBR(s.status === "PAUSED" ? s.pauseUntil : s.pauseFrom)}</span>} />
         <section className="card">
           <h2>Atalhos</h2>
           <ul style={{ display: "grid", gap: 10, fontSize: 14.5 }}>

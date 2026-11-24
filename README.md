@@ -28,6 +28,8 @@ Site da BudStack com a venda dos planos da VirtualStore, a área do cliente e o 
 | **Mensal** | Assinatura no cartão do Mercado Pago, cobrada todo mês. Taxa de domínio (se a BudStack registrar) é paga à parte, na área do cliente. |
 | **Anual** | Pagamento único no Pix ou cartão parcelado (domínio incluso no mesmo pagamento). Alguns dias antes do vencimento o cliente recebe o link da renovação, com lembrete a 3 dias. |
 | **Cancelar** | Quando quiser, sem multa. A loja fica no ar até o fim do período pago e nada mais é cobrado. Dá para desfazer antes do fim (no mensal, o cliente autoriza o cartão de novo). |
+| **Pausar ("congelar")** | De 1 a 3 meses (configurável), começando no fim do período pago. Sem cobrança na pausa (no mensal, a assinatura fica pausada no Mercado Pago); volta sozinha ou antes, se o cliente quiser. Só ativa e em dia; uma pausa a cada 6 meses (configurável). No anual, o link da renovação chega antes do fim da pausa. Você é avisado para suspender e depois reativar a loja. |
+| **Trocar de plano** | Vale a partir da próxima renovação, sem cobrança dupla (no mensal, o valor é atualizado no Mercado Pago). Escolher o plano atual desfaz a troca. |
 | **Reembolso** | Até N dias (padrão 7, CDC art. 49) do primeiro pagamento, o cancelamento estorna tudo no Mercado Pago e encerra na hora. |
 | **Inadimplência** | Pagamento não confirmado → "Inadimplente", com N dias de tolerância (padrão 7) e avisos ao cliente. Sem pagamento, a assinatura é encerrada sem multa e você recebe o aviso para **suspender a loja**. Se pagar depois, volta a ficar ativa e você é avisado para reativar. |
 | **Preço** | Cada assinatura guarda o valor da compra. Mudar o preço do plano não afeta quem já assinou. |

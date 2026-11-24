@@ -3,47 +3,43 @@ import { Icon } from "@/components/Icon";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="auth">
-      <aside className="auth-brand" aria-hidden="true">
-        <Link href="/" className="logo logo-light" tabIndex={-1}>
+    <div className="auth2">
+      <aside className="auth2-brand" aria-hidden="true">
+        <span className="glow g1" />
+        <span className="glow g2" />
+        <Link href="/" className="auth2-logo" tabIndex={-1}>
           <span className="logo-mark">B</span>
-          <span>BudStack</span>
+          <span>
+            Bud<b>Stack</b>
+          </span>
         </Link>
-        <div>
-          <h2>Sua loja, seus pagamentos e sua assinatura em um só lugar.</h2>
+        <div className="auth2-copy">
+          <h2>Sua loja no ar, sua assinatura sob controle.</h2>
+          <p>Acompanhe pagamentos, pause quando precisar e cancele sem burocracia. Tudo em um só lugar.</p>
           <ul>
-            <li>
-              <Icon name="check" className="ico sm" /> Acompanhe a assinatura e os pagamentos
-            </li>
-            <li>
-              <Icon name="check" className="ico sm" /> Pague a renovação ou o domínio com um clique
-            </li>
-            <li>
-              <Icon name="check" className="ico sm" /> Cancele quando quiser, sem multa
-            </li>
+            {["Assinatura, cobranças e histórico", "Pausa, troca de plano e cancelamento", "Pagamento seguro pelo Mercado Pago"].map((t) => (
+              <li key={t}>
+                <Icon name="check" className="ico sm" /> {t}
+              </li>
+            ))}
           </ul>
         </div>
-        <span className="auth-foot">BudStack · VirtualStore</span>
+        <p className="auth2-foot">© {new Date().getFullYear()} BudStack · VirtualStore</p>
       </aside>
-      <div className="auth-main">
-        <div className="login-card">
-          <Link href="/" className="logo auth-logo-sm" aria-label="BudStack, página inicial">
+      <main className="auth2-main">
+        <div className="auth2-box">
+          <Link href="/" className="auth2-logo dark mobile-only" aria-label="BudStack, página inicial">
             <span className="logo-mark">B</span>
-            <span>BudStack</span>
+            <span>
+              Bud<b>Stack</b>
+            </span>
           </Link>
-          <div className="card">{children}</div>
-          <p className="muted" style={{ fontSize: 13.5, textAlign: "center", marginTop: 16 }}>
-            Ainda não é cliente?{" "}
-            <Link href="/planos" style={{ color: "var(--blue)", fontWeight: 700 }}>
-              Conheça os planos
-            </Link>
-            {" · "}
-            <Link href="/" style={{ color: "var(--ink-2)", fontWeight: 600 }}>
-              Voltar ao site
-            </Link>
+          {children}
+          <p className="auth2-alt">
+            Ainda não é cliente? <Link href="/planos">Conheça os planos</Link> · <Link href="/">Voltar ao site</Link>
           </p>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
