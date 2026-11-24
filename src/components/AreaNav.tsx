@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Icon } from "./Icon";
 
 export interface NavGroup {
   title: string;
-  links: { href: string; label: string; exact?: boolean }[];
+  links: { href: string; label: string; icon: string; exact?: boolean }[];
 }
 
 /** Menu da área logada. O grupo de Administração só é enviado para quem é admin. */
@@ -20,6 +21,7 @@ export function AreaNav({ groups }: { groups: NavGroup[] }) {
           <div className="area-nav-links">
             {g.links.map((l) => (
               <Link key={l.href} href={l.href} className={active(l.href, l.exact) ? "on" : ""} aria-current={active(l.href, l.exact) ? "page" : undefined}>
+                <Icon name={l.icon} className="ico sm" />
                 {l.label}
               </Link>
             ))}

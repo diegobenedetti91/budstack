@@ -13,8 +13,8 @@ export default async function AreaLayout({ children }: { children: React.ReactNo
     {
       title: "Minha conta",
       links: [
-        { href: "/conta", label: "Assinaturas", exact: true },
-        { href: "/conta/dados", label: "Meus dados" },
+        { href: "/conta", label: "Assinaturas", icon: "card", exact: true },
+        { href: "/conta/dados", label: "Meus dados", icon: "user" },
       ],
     },
   ];
@@ -22,11 +22,11 @@ export default async function AreaLayout({ children }: { children: React.ReactNo
     groups.push({
       title: "Administração",
       links: [
-        { href: "/admin", label: "Visão geral", exact: true },
-        { href: "/admin/clientes", label: "Clientes" },
-        { href: "/admin/bi", label: "BI" },
-        { href: "/admin/planos", label: "Planos e recursos" },
-        { href: "/admin/configuracoes", label: "Configurações" },
+        { href: "/admin", label: "Visão geral", icon: "home", exact: true },
+        { href: "/admin/clientes", label: "Clientes", icon: "users" },
+        { href: "/admin/bi", label: "BI", icon: "chart" },
+        { href: "/admin/planos", label: "Planos e recursos", icon: "layers" },
+        { href: "/admin/configuracoes", label: "Configurações", icon: "settings" },
       ],
     });
   }
@@ -40,7 +40,17 @@ export default async function AreaLayout({ children }: { children: React.ReactNo
             <span>BudStack</span>
           </Link>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <span className="muted area-user">{user.name.split(" ")[0]}</span>
+            <span className="area-user" title={user.email}>
+              <span className="avatar" aria-hidden="true">
+                {user.name
+                  .split(" ")
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((w) => w[0]!.toUpperCase())
+                  .join("")}
+              </span>
+              <span className="area-user-name">{user.name.split(" ")[0]}</span>
+            </span>
             <Link href="/" className="btn btn-ghost btn-sm">
               Site
             </Link>

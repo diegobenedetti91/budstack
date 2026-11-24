@@ -5,7 +5,8 @@ import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { getPlans, planPriceCents, type Cycle } from "@/lib/plans";
 import { getSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
-import { money } from "@/lib/format";
+import { money, whatsappUrl } from "@/lib/format";
+import { Faq, HelpBox } from "@/components/Faq";
 
 export const metadata: Metadata = {
   title: "Planos da VirtualStore",
@@ -53,7 +54,7 @@ export default async function PlanosPage({ searchParams }: { searchParams: Promi
                 {plans.map((plan) => {
                   const price = planPriceCents(plan, cycle, s);
                   return (
-                    <article key={plan.id} className={`plan${plan.highlight ? " hl" : ""}`}>
+                    <article key={plan.id} id={plan.id} className={`plan${plan.highlight ? " hl" : ""}`}>
                       {plan.highlight && <span className="badge-top">Mais escolhido</span>}
                       <h3>{plan.name}</h3>
                       <p className="tl">{plan.tagline}</p>
@@ -133,6 +134,19 @@ export default async function PlanosPage({ searchParams }: { searchParams: Promi
                 Pagamento seguro pelo Mercado Pago. Mensal no cartão; anual no Pix ou cartão parcelado.
               </li>
             </ul>
+          </div>
+        </section>
+
+        <section className="sec">
+          <div className="wrap">
+            <div className="sec-head">
+              <span className="kicker">Dúvidas</span>
+              <h2>Perguntas frequentes</h2>
+            </div>
+            <Faq s={s} />
+            <div style={{ maxWidth: 820, margin: "24px auto 0" }}>
+              <HelpBox whatsapp={whatsappUrl(s.contact_whatsapp, "Olá! Estou vendo os planos da VirtualStore e tenho uma dúvida.")} />
+            </div>
           </div>
         </section>
       </main>

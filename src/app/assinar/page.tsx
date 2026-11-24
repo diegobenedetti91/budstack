@@ -25,10 +25,26 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
       <SiteHeader />
       <main className="sec soft">
         <div className="wrap">
-          <div className="sec-head" style={{ marginBottom: 32 }}>
+          <div className="sec-head" style={{ marginBottom: 24 }}>
             <span className="kicker">Assinatura</span>
             <h1>Falta pouco para a sua loja</h1>
           </div>
+          <ol className="steps-bar" aria-label="Etapas da assinatura">
+            <li className="done">
+              <span>
+                <Icon name="check" className="ico sm" />
+              </span>
+              Plano
+            </li>
+            <li className="current" aria-current="step">
+              <span>2</span>
+              {user ? "Seus dados" : "Conta e dados"}
+            </li>
+            <li>
+              <span>3</span>
+              Pagamento
+            </li>
+          </ol>
           <div className="checkout">
             <CheckoutForm
               plano={plan.id}
@@ -43,7 +59,12 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
               <h2>Resumo</h2>
               <div className="row">
                 <span>Plano</span>
-                <b>VirtualStore {plan.name}</b>
+                <span>
+                  <b>VirtualStore {plan.name}</b> ·{" "}
+                  <Link href={`/planos${ciclo === "anual" ? "?ciclo=anual" : ""}`} style={{ color: "var(--blue)", fontWeight: 700 }}>
+                    trocar
+                  </Link>
+                </span>
               </div>
               <div className="row">
                 <span>Cobrança</span>
@@ -63,6 +84,18 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
                   ? `Pix ou cartão em até ${s.annual_max_installments}x. Se a BudStack registrar o seu domínio, a taxa de ${money(s.domain_fee_cents)} entra neste pagamento.`
                   : `Cobrança automática no cartão todo mês. Se a BudStack registrar o seu domínio, a taxa de ${money(s.domain_fee_cents)} é paga à parte, na sua área de cliente.`}
               </p>
+              {plan.features.length > 0 && (
+                <details className="summary-features">
+                  <summary>O que o {plan.name} inclui ({plan.features.length})</summary>
+                  <ul className="checks" style={{ marginTop: 10 }}>
+                    {plan.features.map((f) => (
+                      <li key={f.id}>
+                        <Icon name="check" className="ico sm" /> {f.name}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
               <ul className="checks" style={{ marginTop: 18 }}>
                 <li>
                   <Icon name="shield" className="ico sm" /> Reembolso integral em até {s.refund_days} dias
