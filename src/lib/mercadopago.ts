@@ -60,6 +60,8 @@ export async function createPreference(opts: {
   payerName: string;
   maxInstallments: number;
   backUrl: string;
+  /** Link deixa de aceitar pagamento depois desta data */
+  expiresAt?: Date;
 }): Promise<{ id: string; init_point: string }> {
   return mp("/checkout/preferences", {
     method: "POST",
@@ -73,6 +75,7 @@ export async function createPreference(opts: {
       auto_return: "approved",
       notification_url: `${siteUrl()}/api/webhooks/mercadopago`,
       statement_descriptor: "BUDSTACK",
+      ...(opts.expiresAt ? { expires: true, expiration_date_to: opts.expiresAt.toISOString() } : {}),
     }),
   });
 }
@@ -84,10 +87,13 @@ export async function createPreapproval(opts: {
   amountCents: number;
   payerEmail: string;
   backUrl: string;
+  /** Primeira cobrança nesta data (ex.: ao desfazer um cancelamento, no fim do período pago) */
+  startDate?: Date;
+  idempotencyKey?: string;
 }): Promise<MpPreapproval> {
   return mp("/preapproval", {
     method: "POST",
-    idempotencyKey: `sub-${opts.externalReference}`,
+    idempotencyKey: opts.idempotencyKey ?? `sub-${opts.externalReference}`,
     body: JSON.stringify({
       reason: opts.reason,
       external_reference: opts.externalReference,
@@ -99,9 +105,40 @@ export async function createPreapproval(opts: {
         frequency_type: "months",
         transaction_amount: opts.amountCents / 100,
         currency_id: "BRL",
+        ...(opts.startDate ? { start_date: opts.startDate.toISOString() } : {}),
       },
     }),
   });
+}
+
+/** Encerra a assinatura mensal: nada mais é cobrado. */
+export async function cancelPreapproval(id: string): Promise<void> {
+  await mp(`/preapproval/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify({ status: "cancelled" }) });
+}
+
+/** Estorno integral de um pagamento. */
+export async function refundPayment(paymentId: string, key: string): Promise<void> {
+  await mp(`/v1/payments/${encodeURIComponent(paymentId)}/refunds`, { method: "POST", idempotencyKey: `refund-${key}`, body: "{}" });
+}
+
+export interface MpAuthorizedPayment {
+  id: number;
+  preapproval_id?: string;
+  /** scheduled | processed | recycling | cancelled */
+  status?: string;
+  transaction_amount?: number;
+  debit_date?: string | null;
+  date_created?: string | null;
+  payment?: { id?: number; status?: string; status_detail?: string } | null;
+}
+
+/** Cobranças mensais de uma assinatura (a mais recente primeiro). */
+export async function searchAuthorizedPayments(preapprovalId: string): Promise<MpAuthorizedPayment[]> {
+  const q = new URLSearchParams({ preapproval_id: preapprovalId, limit: "100" });
+  const data = await mp<{ results?: MpAuthorizedPayment[] }>(`/authorized_payments/search?${q}`);
+  const list = data.results ?? [];
+  const when = (a: MpAuthorizedPayment) => new Date(a.debit_date || a.date_created || 0).getTime();
+  return list.sort((a, b) => when(b) - when(a));
 }
 
 export function getPayment(id: string | number): Promise<MpPayment> {
@@ -112,7 +149,7 @@ export function getPreapproval(id: string): Promise<MpPreapproval> {
   return mp(`/preapproval/${encodeURIComponent(id)}`);
 }
 
-export function getAuthorizedPayment(id: string | number): Promise<{ id: number; preapproval_id?: string; status?: string }> {
+export function getAuthorizedPayment(id: string | number): Promise<MpAuthorizedPayment> {
   return mp(`/authorized_payments/${encodeURIComponent(String(id))}`);
 }
 

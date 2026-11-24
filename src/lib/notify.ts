@@ -1,12 +1,12 @@
 import "server-only";
 import nodemailer from "nodemailer";
 import type { Subscription } from "@prisma/client";
-import { getPlan, SETUP_BUSINESS_DAYS } from "./plans";
+import { getSettings } from "./settings";
 import { cycleLabel, formatDocument, formatPhone, money, priceSuffix } from "./format";
 import { siteUrl } from "./mercadopago";
 
-// Avisos de nova assinatura: e-mail e WhatsApp para você, e-mail de confirmação para o cliente.
-// Cada canal falha sozinho, sem derrubar os outros nem o webhook.
+// Avisos: para você (e-mail + WhatsApp) e para o cliente (e-mail).
+// Cada canal falha sozinho, sem derrubar os outros nem a operação que chamou.
 
 function escapeHtml(v: string): string {
   return v.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -42,83 +42,84 @@ async function sendWhatsApp(text: string): Promise<boolean> {
   return true;
 }
 
+/** Aviso para você. Retorna true se ao menos um canal entregou. */
+export async function notifyOwner(subject: string, text: string): Promise<boolean> {
+  const s = await getSettings();
+  const to = s.notify_email || process.env.NOTIFY_EMAIL || "";
+  const html = `<pre style="font:14px/1.5 system-ui,sans-serif;white-space:pre-wrap">${escapeHtml(text)}</pre>`;
+  const results = await Promise.allSettled([
+    to ? sendEmail(to, subject, html, text) : Promise.resolve(false),
+    s.notify_whatsapp ? sendWhatsApp(`${subject}\n\n${text}`) : Promise.resolve(false),
+  ]);
+  results.forEach((r, i) => r.status === "rejected" && console.error(`[notify] ${i ? "whatsapp" : "e-mail"} falhou:`, r.reason));
+  return results.some((r) => r.status === "fulfilled" && r.value === true);
+}
+
+/** E-mail para o cliente: parágrafos simples e, opcionalmente, um botão. Texto é escapado. */
+export async function emailCustomer(to: string, subject: string, paragraphs: string[], cta?: { label: string; url: string }): Promise<boolean> {
+  const url = cta ? (cta.url.startsWith("http") ? cta.url : `${siteUrl()}${cta.url}`) : "";
+  const html = `
+  <div style="font:15px/1.6 system-ui,sans-serif;color:#0B1324;max-width:560px">
+    ${paragraphs.map((p, i) => (i === 0 ? `<h2 style="margin:0 0 12px;font-size:20px">${escapeHtml(p)}</h2>` : `<p>${escapeHtml(p)}</p>`)).join("")}
+    ${cta ? `<p style="margin:24px 0"><a href="${escapeHtml(url)}" style="background:#2F5BFF;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:700">${escapeHtml(cta.label)}</a></p>` : ""}
+    <p style="color:#64748B;font-size:13px">BudStack · VirtualStore</p>
+  </div>`;
+  const text = [...paragraphs, cta ? `${cta.label}: ${url}` : ""].filter(Boolean).join("\n\n");
+  try {
+    return await sendEmail(to, subject, html, text);
+  } catch (err) {
+    console.error("[notify] e-mail ao cliente falhou:", subject, err);
+    return false;
+  }
+}
+
+// ───────── Mensagens sobre assinaturas ─────────
+
 function domainLine(s: Subscription): string {
   if (s.domainOption === "OWN") return `Já tem domínio: ${s.domain}`;
-  const paid = s.domainPaidAt ? "taxa paga" : "taxa ainda NÃO paga";
-  return `NÃO tem domínio. Registrar para o cliente: ${s.domain} (${money(s.domainFeeCents)}, ${paid})`;
+  return `NÃO tem domínio. Registrar para o cliente: ${s.domain} (${money(s.domainFeeCents)}, ${s.domainPaidAt ? "taxa paga" : "taxa ainda NÃO paga"})`;
 }
 
-function planLine(s: Subscription): string {
-  const plan = getPlan(s.plan);
-  return `${plan?.name ?? s.plan} (${cycleLabel(s.cycle)}) · ${money(s.planPriceCents)}${priceSuffix(s.cycle)}`;
-}
-
-export function ownerMessage(s: Subscription): string {
+export function subscriptionSummary(s: Subscription, planName: string): string {
   return [
-    "Nova assinatura paga — VirtualStore",
-    "",
-    `Plano: ${planLine(s)}`,
-    `Valor recebido: ${money(s.totalCents)}`,
+    `Plano: ${planName} (${cycleLabel(s.cycle)}) · ${money(s.planPriceCents)}${priceSuffix(s.cycle)}`,
     `Pedido: ${s.code}`,
-    "",
     `Loja: ${s.storeName}`,
     `Domínio: ${domainLine(s)}`,
-    "",
     `Cliente: ${s.customerName}`,
     `E-mail: ${s.customerEmail}`,
     `WhatsApp: ${formatPhone(s.customerPhone)}`,
     `CPF/CNPJ: ${formatDocument(s.customerDocument)}`,
+    s.source ? `Origem: ${[s.source, s.medium, s.campaign].filter(Boolean).join(" / ")}` : "",
     "",
-    `Painel: ${siteUrl()}/admin/assinaturas/${s.id}`,
-  ].join("\n");
+    `Painel: ${siteUrl()}/admin/clientes/${s.id}`,
+  ]
+    .filter((l, i, a) => l !== "" || a[i - 1] !== "")
+    .join("\n");
 }
 
-/** Avisa você (e-mail + WhatsApp) e confirma ao cliente. Retorna true se ao menos um aviso seu saiu. */
-export async function notifyPaid(s: Subscription): Promise<boolean> {
-  const text = ownerMessage(s);
-  const html = `<pre style="font:14px/1.5 system-ui,sans-serif;white-space:pre-wrap">${escapeHtml(text)}</pre>`;
-  const owner = process.env.NOTIFY_EMAIL;
-
-  const results = await Promise.allSettled([
-    owner ? sendEmail(owner, `Nova assinatura paga: ${s.storeName} · ${planLine(s)}`, html, text) : Promise.resolve(false),
-    sendWhatsApp(text),
-    sendCustomerConfirmation(s),
-  ]);
-  results.forEach((r, i) => {
-    if (r.status === "rejected") console.error(`[notify] canal ${["e-mail", "whatsapp", "cliente"][i]} falhou:`, r.reason);
-  });
-  return results.slice(0, 2).some((r) => r.status === "fulfilled" && r.value === true);
-}
-
-/** Aviso curto quando a taxa do domínio (plano mensal) é paga depois da assinatura. */
-export async function notifyDomainPaid(s: Subscription): Promise<void> {
-  const text = `Taxa de domínio paga — ${s.storeName}\nRegistrar: ${s.domain}\nPedido: ${s.code}\nPainel: ${siteUrl()}/admin/assinaturas/${s.id}`;
-  const owner = process.env.NOTIFY_EMAIL;
-  const results = await Promise.allSettled([
-    owner ? sendEmail(owner, `Taxa de domínio paga: ${s.domain}`, `<pre style="font:14px/1.5 system-ui,sans-serif">${escapeHtml(text)}</pre>`, text) : Promise.resolve(false),
-    sendWhatsApp(text),
-  ]);
-  results.forEach((r) => r.status === "rejected" && console.error("[notify] aviso de domínio falhou:", r.reason));
-}
-
-async function sendCustomerConfirmation(s: Subscription): Promise<boolean> {
-  const plan = getPlan(s.plan);
-  const first = escapeHtml(s.customerName.split(" ")[0]);
-  const domainHtml =
+/** Nova assinatura paga: avisa você e dá as boas-vindas ao cliente. */
+export async function notifyNewPaid(s: Subscription, planName: string): Promise<boolean> {
+  const settings = await getSettings();
+  const owner = notifyOwner(`Nova assinatura paga: ${s.storeName} · ${planName} (${cycleLabel(s.cycle)})`, `Valor recebido: ${money(s.totalCents)}\n${subscriptionSummary(s, planName)}`);
+  const first = s.customerName.split(" ")[0];
+  const domain =
     s.domainOption === "OWN"
-      ? `Vamos usar o seu domínio <b>${escapeHtml(s.domain)}</b>. Vamos te passar como apontá-lo para a loja.`
+      ? `Vamos usar o seu domínio ${s.domain} e te passar como apontá-lo para a loja.`
       : s.domainPaidAt
-        ? `Vamos registrar o domínio <b>${escapeHtml(s.domain)}</b> para você.`
-        : `Para registrarmos o domínio <b>${escapeHtml(s.domain)}</b>, falta pagar a taxa de registro na página do seu pedido.`;
-  const html = `
-  <div style="font:15px/1.6 system-ui,sans-serif;color:#0B1324;max-width:560px">
-    <h2 style="margin:0 0 12px">Pagamento confirmado, ${first}!</h2>
-    <p>Sua assinatura do plano <b>${escapeHtml(plan?.name ?? s.plan)}</b> (${cycleLabel(s.cycle)}) da VirtualStore está ativa. Pedido <b>${s.code}</b>.</p>
-    <p>${domainHtml}</p>
-    <p><b>Próximos passos:</b> responda este e-mail com o logo da loja (PNG), as cores da marca e o WhatsApp de atendimento. Com isso em mãos, sua loja <b>${escapeHtml(s.storeName)}</b> fica no ar em até ${SETUP_BUSINESS_DAYS} dias úteis.</p>
-    <p>Acompanhe o pedido em <a href="${siteUrl()}/assinar/obrigado?pedido=${s.code}">${siteUrl()}/assinar/obrigado?pedido=${s.code}</a>.</p>
-    <p style="color:#64748B;font-size:13px">BudStack · VirtualStore</p>
-  </div>`;
-  const text = `Pagamento confirmado! Plano ${plan?.name ?? s.plan} (${cycleLabel(s.cycle)}), pedido ${s.code}. Responda este e-mail com o logo, as cores e o WhatsApp da loja. Sua loja fica no ar em até ${SETUP_BUSINESS_DAYS} dias úteis.`;
-  return sendEmail(s.customerEmail, `Pagamento confirmado · VirtualStore ${plan?.name ?? ""}`.trim(), html, text);
+        ? `Vamos registrar o domínio ${s.domain} para você.`
+        : `Para registrarmos o domínio ${s.domain}, falta pagar a taxa de registro na sua área de cliente.`;
+  await emailCustomer(
+    s.customerEmail,
+    `Pagamento confirmado · VirtualStore ${planName}`,
+    [
+      `Pagamento confirmado, ${first}!`,
+      `Sua assinatura do plano ${planName} (${cycleLabel(s.cycle)}) da VirtualStore está ativa. Pedido ${s.code}.`,
+      domain,
+      `Próximos passos: responda este e-mail com o logo da loja (PNG), as cores da marca e o WhatsApp de atendimento. Com isso em mãos, sua loja ${s.storeName} fica no ar em até ${settings.setup_business_days} dias úteis.`,
+      "Na sua área de cliente você acompanha a assinatura, os pagamentos e pode cancelar quando quiser.",
+    ],
+    { label: "Ver minha assinatura", url: "/conta" },
+  );
+  return owner;
 }

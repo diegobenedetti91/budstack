@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { SESSION_COOKIE, isValidSession } from "@/lib/session";
 
-// Primeira barreira do painel: sem sessão válida, /admin/* vai para o login.
-// As páginas e ações do admin conferem de novo com requireAdmin().
+// Primeira barreira: sem cookie de sessão, /conta e /admin vão para o login.
+// A sessão e o papel (cliente/admin) são conferidos no banco por requireUser/requireAdmin
+// em cada página e ação.
 export function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const logged = isValidSession(req.cookies.get(SESSION_COOKIE)?.value);
-
-  if (pathname === "/admin/login") {
-    return logged ? NextResponse.redirect(new URL("/admin", req.url)) : NextResponse.next();
-  }
-  if (!logged) return NextResponse.redirect(new URL("/admin/login", req.url));
-  return NextResponse.next();
+  if (req.cookies.get("bs_session")?.value) return NextResponse.next();
+  const url = new URL("/entrar", req.url);
+  url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
+  return NextResponse.redirect(url);
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/conta/:path*", "/admin/:path*"],
 };

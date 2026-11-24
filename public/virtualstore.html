@@ -1044,6 +1044,15 @@
   </a>
 
   <script>
+    // Visita anônima para o BI do site (sem dados pessoais; ver /api/t)
+    try {
+      var b = JSON.stringify({ path: "/virtualstore", href: location.href, ref: document.referrer || null });
+      if (!(navigator.sendBeacon && navigator.sendBeacon("/api/t", new Blob([b], { type: "application/json" })))) {
+        fetch("/api/t", { method: "POST", body: b, headers: { "Content-Type": "application/json" }, keepalive: true }).catch(function () {});
+      }
+    } catch (e) {}
+  </script>
+  <script>
     (function () {
       var WHATSAPP = "5519981687551";
       document.querySelectorAll("[data-wa]").forEach(function (a) {

@@ -8,15 +8,112 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Uma contratação da VirtualStore feita pelo site.
+// ───────── Contas ─────────
+
+/// Cliente ou administrador. Um login só: o admin vê o menu de Administração.
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  phone        String?
+  document     String?
+  passwordHash String
+  /// CUSTOMER | ADMIN
+  role         String    @default("CUSTOMER")
+  /// ACTIVE | BLOCKED
+  status       String    @default("ACTIVE")
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+
+  sessions      Session[]
+  resets        PasswordReset[]
+  subscriptions Subscription[]
+}
+
+/// Sessão de login. O id é o sha256 do token do cookie (o token em si não fica no banco).
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?  @db.VarChar(200)
+
+  @@index([userId])
+}
+
+model PasswordReset {
+  /// sha256 do token enviado por e-mail
+  id        String    @id
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Falhas de login por conta (e:email) e por IP (ip:x), numa janela de tempo.
+model LoginAttempt {
+  key   String   @id @db.VarChar(191)
+  count Int
+  until DateTime
+}
+
+// ───────── Catálogo (editável no painel) ─────────
+
+model Plan {
+  /// slug usado nas URLs (ex.: profissional)
+  id           String        @id @db.VarChar(40)
+  name         String
+  tagline      String        @db.VarChar(255)
+  monthlyCents Int
+  highlight    Boolean       @default(false)
+  active       Boolean       @default(true)
+  sort         Int           @default(0)
+  updatedAt    DateTime      @updatedAt
+  features     PlanFeature[]
+}
+
+/// Item que a VirtualStore oferece. Cada plano marca quais itens inclui.
+model Feature {
+  id     String        @id @default(cuid())
+  name   String        @db.VarChar(160)
+  sort   Int           @default(0)
+  active Boolean       @default(true)
+  plans  PlanFeature[]
+}
+
+model PlanFeature {
+  planId    String  @db.VarChar(40)
+  featureId String
+  plan      Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  feature   Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@id([planId, featureId])
+  @@index([featureId])
+}
+
+/// Configurações do painel (valor em JSON). Segredos ficam nas variáveis de ambiente.
+model Setting {
+  key   String @id @db.VarChar(80)
+  value String @db.Text
+}
+
+// ───────── Assinaturas e cobrança ─────────
+
+/// Uma contratação da VirtualStore (uma loja).
 model Subscription {
   id        String   @id @default(cuid())
-  /// Código curto mostrado ao cliente e usado como external_reference no Mercado Pago (ex.: BS-7K2M9Q)
+  /// Código curto mostrado ao cliente (ex.: BS-7K2M9Q); external_reference da assinatura mensal
   code      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  /// id do plano em src/lib/plans.ts
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   plan           String
   /// MENSAL | ANUAL
   cycle          String
@@ -26,9 +123,22 @@ model Subscription {
   /// Valor da primeira cobrança (anual: plano + domínio; mensal: só a mensalidade)
   totalCents     Int
 
-  /// PENDING (aguardando pagamento) | PAID | CANCELLED
-  status String    @default("PENDING")
-  paidAt DateTime?
+  /// PENDING (aguardando 1º pagamento) | ACTIVE | PAST_DUE (inadimplente, na tolerância) | CANCELED | EXPIRED (encerrada por falta de pagamento)
+  status             String    @default("PENDING")
+  paidAt             DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  /// Cancelamento pedido: vale até o fim do período pago, sem novas cobranças
+  cancelAtPeriodEnd  Boolean   @default(false)
+  cancelReason       String?   @db.VarChar(255)
+  canceledAt         DateTime?
+  endedAt            DateTime?
+  /// canceled | refunded | payment_failed | not_paid
+  endedReason        String?
+  /// Fim da tolerância de quem está em atraso
+  graceUntil         DateTime?
+  /// Avisos já enviados (evita repetir), JSON com chaves
+  reminders          String    @default("[]") @db.VarChar(2000)
 
   customerName     String
   customerEmail    String
@@ -39,7 +149,6 @@ model Subscription {
   /// OWN (cliente já tem) | REGISTER (BudStack registra)
   domainOption String
   domain       String
-  /// Quando a taxa de registro do domínio foi paga (só para REGISTER)
   domainPaidAt DateTime?
 
   mpPreferenceId       String?
@@ -48,12 +157,84 @@ model Subscription {
   mpDomainPreferenceId String?
   /// Status da assinatura mensal no Mercado Pago (pending, authorized, paused, cancelled)
   mpSubscriptionStatus String?
+  /// Link para concluir a assinatura mensal no Mercado Pago
+  mpInitPoint          String?   @db.Text
+
+  /// Origem do cliente (BI de captação)
+  visitorId String? @db.VarChar(40)
+  source    String? @db.VarChar(60)
+  medium    String? @db.VarChar(60)
+  campaign  String? @db.VarChar(120)
 
   /// Etapa da implantação: NOVO | CONFIGURANDO | NO_AR | CANCELADO
   stage      String    @default("NOVO")
   notes      String?   @db.Text
   notifiedAt DateTime?
 
+  invoices Invoice[]
+  events   SubscriptionEvent[]
+
   @@index([status, createdAt])
   @@index([mpPreapprovalId])
+  @@index([userId])
+}
+
+/// Cobrança: 1º pagamento, renovação anual, mensalidade debitada ou taxa de domínio.
+model Invoice {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  /// PLAN | DOMAIN
+  kind           String
+  amountCents    Int
+  /// Parte do valor que é a taxa de domínio (anual com registro)
+  domainCents    Int          @default(0)
+  /// PENDING | PAID | FAILED | REFUNDED | CANCELED
+  status         String       @default("PENDING")
+  dueDate        DateTime
+  periodStart    DateTime?
+  periodEnd      DateTime?
+  paidAt         DateTime?
+  /// external_reference no Mercado Pago (pagamentos únicos)
+  reference      String?      @unique @db.VarChar(80)
+  mpPaymentId    String?      @unique @db.VarChar(40)
+  mpPreferenceId String?
+  payUrl         String?      @db.Text
+  failureReason  String?      @db.VarChar(255)
+  createdAt      DateTime     @default(now())
+
+  @@index([subscriptionId])
+  @@index([status, dueDate])
+  @@index([paidAt])
+}
+
+/// Histórico da assinatura (para o cliente, o admin e o BI de churn).
+model SubscriptionEvent {
+  id             Int          @id @default(autoincrement())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  /// created | paid | renewed | past_due | cancel_requested | cancel_undone | canceled | refunded | expired
+  kind           String       @db.VarChar(40)
+  amountCents    Int          @default(0)
+  detail         String?      @db.VarChar(500)
+  createdAt      DateTime     @default(now())
+
+  @@index([subscriptionId])
+  @@index([kind, createdAt])
+}
+
+// ───────── Captação (BI) ─────────
+
+/// Visita anônima: id aleatório no cookie, sem dados pessoais.
+model PageView {
+  id        Int      @id @default(autoincrement())
+  visitorId String   @db.VarChar(40)
+  path      String   @db.VarChar(200)
+  source    String   @db.VarChar(60)
+  medium    String?  @db.VarChar(60)
+  campaign  String?  @db.VarChar(120)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([visitorId])
 }

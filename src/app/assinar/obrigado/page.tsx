@@ -1,34 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { Subscription } from "@prisma/client";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { Icon } from "@/components/Icon";
-import { findByCode, reconcile } from "@/lib/subscriptions";
-import { getPlan, SETUP_BUSINESS_DAYS } from "@/lib/plans";
+import { findByCode, reconcile } from "@/lib/billing";
+import { planNames } from "@/lib/plans";
+import { getSettings } from "@/lib/settings";
 import { cycleLabel, money, whatsappUrl } from "@/lib/format";
-import { payDomainAction } from "./actions";
 
 export const metadata: Metadata = { title: "Sua assinatura", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP || "5519981687551";
-
-export default async function ObrigadoPage({ searchParams }: { searchParams: Promise<{ pedido?: string; erro?: string }> }) {
+export default async function ObrigadoPage({ searchParams }: { searchParams: Promise<{ pedido?: string }> }) {
   const sp = await searchParams;
   let sub = sp.pedido ? await findByCode(sp.pedido) : null;
 
-  // Ao voltar do Mercado Pago, confere o pagamento na hora (sem esperar o aviso do Mercado Pago)
-  if (sub && (sub.status === "PENDING" || (sub.domainOption === "REGISTER" && !sub.domainPaidAt))) {
+  // Ao voltar do Mercado Pago, confere o pagamento na hora (sem esperar o aviso)
+  if (sub && sub.status === "PENDING") {
+    const before = sub;
     sub = await reconcile(sub).catch((err) => {
       console.error("[obrigado] conferência falhou:", err);
-      return sub!;
+      return before;
     });
   }
+  const [names, s] = await Promise.all([planNames(), getSettings()]);
 
   return (
     <>
       <SiteHeader />
       <main className="sec soft">
-        <div className="wrap">{sub ? <Status sub={sub} domainError={sp.erro === "dominio"} /> : <NotFound />}</div>
+        <div className="wrap">
+          {sub ? <Status sub={sub} planName={names.get(sub.plan) ?? sub.plan} setupDays={s.setup_business_days} whatsapp={s.contact_whatsapp} /> : <NotFound />}
+        </div>
       </main>
       <SiteFooter />
     </>
@@ -42,20 +45,19 @@ function NotFound() {
         <Icon name="alert" />
       </div>
       <h1>Pedido não encontrado</h1>
-      <p>Confira o link recebido por e-mail ou fale com a gente no WhatsApp.</p>
+      <p>Confira o link recebido por e-mail ou entre na sua área de cliente.</p>
       <div className="ctas">
-        <Link href="/planos" className="btn btn-ghost">
-          Ver planos
+        <Link href="/conta" className="btn btn-primary">
+          Minha conta
         </Link>
       </div>
     </div>
   );
 }
 
-function Status({ sub, domainError }: { sub: NonNullable<Awaited<ReturnType<typeof findByCode>>>; domainError: boolean }) {
-  const plan = getPlan(sub.plan);
+function Status({ sub, planName, setupDays, whatsapp }: { sub: Subscription; planName: string; setupDays: number; whatsapp: string }) {
   const first = sub.customerName.split(" ")[0];
-  const help = whatsappUrl(WHATSAPP, `Olá! Sobre a minha assinatura ${sub.code} (${sub.storeName}).`);
+  const help = whatsappUrl(whatsapp, `Olá! Sobre a minha assinatura ${sub.code} (${sub.storeName}).`);
 
   if (sub.status === "PENDING") {
     return (
@@ -70,6 +72,9 @@ function Status({ sub, domainError }: { sub: NonNullable<Awaited<ReturnType<type
           Pedido <b>{sub.code}</b>. Assim que o Mercado Pago confirmar, esta página atualiza sozinha e você recebe um e-mail. No Pix, costuma levar poucos segundos.
         </p>
         <div className="ctas">
+          <Link href="/conta" className="btn btn-ghost">
+            Minha conta
+          </Link>
           <a href={help} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
             <Icon name="msg" className="ico sm" /> Falar com a BudStack
           </a>
@@ -78,14 +83,14 @@ function Status({ sub, domainError }: { sub: NonNullable<Awaited<ReturnType<type
     );
   }
 
-  if (sub.status === "CANCELLED") {
+  if (sub.status !== "ACTIVE" && sub.status !== "PAST_DUE") {
     return (
       <div className="status-box">
         <div className="status-ic" style={{ background: "var(--red-50)", color: "#B42318" }}>
           <Icon name="alert" />
         </div>
         <h1>Esta assinatura não está ativa</h1>
-        <p>O pagamento do pedido {sub.code} não foi concluído ou foi cancelado. Você pode assinar de novo ou falar com a gente.</p>
+        <p>O pedido {sub.code} não foi concluído ou foi cancelado. Você pode assinar de novo ou falar com a gente.</p>
         <div className="ctas">
           <Link href="/planos" className="btn btn-primary">
             Ver planos
@@ -106,20 +111,12 @@ function Status({ sub, domainError }: { sub: NonNullable<Awaited<ReturnType<type
       </div>
       <h1>Tudo certo, {first}! Sua assinatura está ativa.</h1>
       <p>
-        Plano <b>{plan?.name ?? sub.plan}</b> ({cycleLabel(sub.cycle)}) da VirtualStore · pedido <b>{sub.code}</b>. Enviamos a confirmação para o seu e-mail.
+        Plano <b>{planName}</b> ({cycleLabel(sub.cycle)}) da VirtualStore · pedido <b>{sub.code}</b>. Enviamos a confirmação para o seu e-mail.
       </p>
 
       {domainPending && (
-        <div className="card" style={{ marginTop: 26, textAlign: "left" }}>
-          {domainError && <div className="alert error">Não conseguimos abrir o pagamento do domínio. Tente de novo ou fale com a gente.</div>}
-          <h2 style={{ marginBottom: 8 }}>Falta pagar o registro do domínio</h2>
-          <p className="muted" style={{ marginBottom: 16 }}>
-            Para registrarmos <b style={{ color: "var(--ink)" }}>{sub.domain}</b> em seu nome, pague a taxa de {money(sub.domainFeeCents)} (1 ano) no Pix ou cartão.
-          </p>
-          <form action={payDomainAction}>
-            <input type="hidden" name="pedido" value={sub.code} />
-            <button className="btn btn-primary btn-block">Pagar registro do domínio · {money(sub.domainFeeCents)}</button>
-          </form>
+        <div className="alert info" style={{ marginTop: 22, textAlign: "left" }}>
+          Falta pagar o registro do domínio <b>{sub.domain}</b> ({money(sub.domainFeeCents)}). Faça isso na sua área de cliente.
         </div>
       )}
 
@@ -142,11 +139,14 @@ function Status({ sub, domainError }: { sub: NonNullable<Awaited<ReturnType<type
           <span className="n">3</span>
           <div>
             <b>Sua loja {sub.storeName} no ar</b>
-            <span>Em até {SETUP_BUSINESS_DAYS} dias úteis após recebermos os materiais, com pagamentos e frete configurados.</span>
+            <span>Em até {setupDays} dias úteis após recebermos os materiais, com pagamentos e frete configurados.</span>
           </div>
         </li>
       </ol>
       <div className="ctas">
+        <Link href="/conta" className="btn btn-primary">
+          Ir para minha conta
+        </Link>
         <a href={help} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
           <Icon name="msg" className="ico sm" /> Falar com a BudStack
         </a>

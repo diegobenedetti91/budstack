@@ -1,90 +1,62 @@
-// Planos da VirtualStore vendidos no site.
-//
-// ⚠️ VALORES PROVISÓRIOS: troque os preços abaixo pelos seus antes de publicar.
-// Os valores são congelados em cada assinatura no momento da compra, então mudar
-// aqui não altera quem já assinou.
+import "server-only";
+import { prisma } from "./prisma";
+import type { Settings } from "./settings-schema";
+
+// Planos e recursos vêm do banco e são editados em Administração → Planos e recursos.
+// Cada assinatura guarda o valor do momento da compra: mudar o preço não afeta quem já assinou.
 
 export type Cycle = "MENSAL" | "ANUAL";
 
-export interface Plan {
-  id: "essencial" | "profissional" | "completo";
+export interface PlanView {
+  id: string;
   name: string;
   tagline: string;
-  /** Mensalidade em centavos */
   monthlyCents: number;
-  highlight?: boolean;
-  /** Itens mostrados no card. O primeiro item dos planos maiores resume o anterior. */
-  features: string[];
+  highlight: boolean;
+  active: boolean;
+  sort: number;
+  features: { id: string; name: string }[];
 }
 
-export const PLANS: Plan[] = [
-  {
-    id: "essencial",
-    name: "Essencial",
-    tagline: "Para começar a vender online com a sua marca.",
-    monthlyCents: 14900,
-    features: [
-      "Loja completa com a sua marca, logo e cores",
-      "Catálogo com tamanhos, cores e estoque por variação",
-      "Pix, cartão, NuPay, InfinitePay e pedido pelo WhatsApp",
-      "Frete pelo CEP: Correios, Melhor Envio, local ou retirada",
-      "Cupons e promoções relâmpago",
-      "Área do cliente com pedidos e rastreio",
-      "Painel com pedidos, clientes e relatórios",
-    ],
-  },
-  {
-    id: "profissional",
-    name: "Profissional",
-    tagline: "Para quem quer a operação no automático.",
-    monthlyCents: 24900,
-    highlight: true,
-    features: [
-      "Tudo do Essencial",
-      "Nota fiscal automática pelo Bling",
-      "Etiqueta automática do Melhor Envio",
-      "Aviso de novo pedido com checklist",
-      "Cashback com crédito na loja",
-      "Recuperação de carrinho abandonado",
-      "DRE com lucro real, impostos e perdas",
-    ],
-  },
-  {
-    id: "completo",
-    name: "Completo",
-    tagline: "Para crescer com IA e marketing de dados.",
-    monthlyCents: 39900,
-    features: [
-      "Tudo do Profissional",
-      "Atendimento com IA 24h",
-      "Meta Pixel + API de Conversões",
-      "Interesse por produto e aviso de promoção",
-      "Funil de conversão e origem de cada pedido",
-      "Suporte prioritário",
-    ],
-  },
-];
+export async function getPlans(opts: { activeOnly?: boolean } = {}): Promise<PlanView[]> {
+  const plans = await prisma.plan.findMany({
+    where: opts.activeOnly ? { active: true } : undefined,
+    orderBy: [{ sort: "asc" }, { monthlyCents: "asc" }],
+    include: { features: { include: { feature: true } } },
+  });
+  return plans.map((p) => ({
+    id: p.id,
+    name: p.name,
+    tagline: p.tagline,
+    monthlyCents: p.monthlyCents,
+    highlight: p.highlight,
+    active: p.active,
+    sort: p.sort,
+    features: p.features
+      .map((pf) => pf.feature)
+      .filter((f) => f.active)
+      .sort((a, b) => a.sort - b.sort)
+      .map((f) => ({ id: f.id, name: f.name })),
+  }));
+}
 
-/** O plano anual cobra este número de mensalidades (12 − 2 meses grátis). */
-export const ANNUAL_MONTHS_CHARGED = 10;
-/** Parcelas sem juros oferecidas no plano anual (cartão). */
-export const ANNUAL_MAX_INSTALLMENTS = 12;
+export async function getPlan(id: string | null | undefined, opts: { activeOnly?: boolean } = {}): Promise<PlanView | undefined> {
+  if (!id || !/^[a-z0-9-]{1,40}$/.test(id)) return undefined;
+  const plans = await getPlans(opts);
+  return plans.find((p) => p.id === id);
+}
 
-/** Taxa de registro do domínio .com.br por 1 ano, quando a BudStack registra para o cliente. */
-export const DOMAIN_FEE_CENTS = 8000;
-
-/** Prazo prometido para a loja estar no ar depois do pagamento e do envio dos materiais. */
-export const SETUP_BUSINESS_DAYS = 7;
-
-export function getPlan(id: string | null | undefined): Plan | undefined {
-  return PLANS.find((p) => p.id === id);
+/** Nome do plano para exibição (assinaturas antigas podem apontar para plano removido). */
+export async function planNames(): Promise<Map<string, string>> {
+  const rows = await prisma.plan.findMany({ select: { id: true, name: true } });
+  return new Map(rows.map((r) => [r.id, r.name]));
 }
 
 export function isCycle(v: unknown): v is Cycle {
   return v === "MENSAL" || v === "ANUAL";
 }
 
-/** Valor do plano no ciclo escolhido, em centavos. */
-export function planPriceCents(plan: Plan, cycle: Cycle): number {
-  return cycle === "ANUAL" ? plan.monthlyCents * ANNUAL_MONTHS_CHARGED : plan.monthlyCents;
+/** Valor do plano no ciclo, em centavos. */
+export function planPriceCents(plan: { monthlyCents: number }, cycle: Cycle, s: Pick<Settings, "annual_months_charged">): number {
+  return cycle === "ANUAL" ? plan.monthlyCents * s.annual_months_charged : plan.monthlyCents;
 }

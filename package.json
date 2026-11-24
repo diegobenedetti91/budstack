@@ -4,13 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && prisma migrate deploy && node scripts/setup-admin.mjs && next build",
     "build:local": "prisma generate && next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "setup-admin": "node scripts/setup-admin.mjs"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
+    "bcryptjs": "^3.0.3",
     "next": "16.4.5",
     "nodemailer": "10.4.0",
     "prisma": "6.19.3",

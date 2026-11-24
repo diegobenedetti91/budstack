@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
-import { PLANS } from "@/lib/plans";
+import { getPlans } from "@/lib/plans";
 import { money } from "@/lib/format";
 
-const fromPrice = Math.min(...PLANS.map((p) => p.monthlyCents));
+export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
+  const plans = await getPlans({ activeOnly: true });
+  const fromPrice = plans.length ? Math.min(...plans.map((p) => p.monthlyCents)) : null;
   return (
     <>
       <SiteHeader />
@@ -62,7 +64,7 @@ export default function Home() {
                 </ul>
                 <div className="ctas" style={{ justifyContent: "flex-start" }}>
                   <Link href="/planos" className="btn btn-primary">
-                    Planos a partir de {money(fromPrice)}/mês
+                    {fromPrice ? `Planos a partir de ${money(fromPrice)}/mês` : "Ver planos"}
                   </Link>
                   <a href="/virtualstore" className="btn btn-ghost">
                     Ver todos os recursos

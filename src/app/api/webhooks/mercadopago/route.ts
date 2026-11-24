@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthorizedPayment, getPayment, getPreapproval } from "@/lib/mercadopago";
-import { codeFromReference, findByCode, reconcile } from "@/lib/subscriptions";
+import { findByReference, reconcile } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -29,15 +29,12 @@ export async function POST(req: NextRequest) {
 
 async function findSubscription(type: string, id: string) {
   switch (type) {
-    case "payment": {
-      const code = codeFromReference((await getPayment(id)).external_reference);
-      return code ? findByCode(code) : null;
-    }
+    case "payment":
+      return findByReference((await getPayment(id)).external_reference);
     case "subscription_preapproval":
     case "preapproval": {
       const pre = await getPreapproval(id);
-      const code = codeFromReference(pre.external_reference);
-      return code ? findByCode(code) : prisma.subscription.findFirst({ where: { mpPreapprovalId: pre.id } });
+      return (await prisma.subscription.findFirst({ where: { mpPreapprovalId: pre.id } })) ?? findByReference(pre.external_reference);
     }
     case "subscription_authorized_payment":
     case "authorized_payment": {
