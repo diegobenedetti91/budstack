@@ -5,7 +5,7 @@ Site da BudStack com a venda dos planos da VirtualStore, a área do cliente e o 
 | Endereço | O que é |
 |---|---|
 | `/` | Página da BudStack com os produtos (hoje, a VirtualStore) |
-| `/virtualstore` | Landing da VirtualStore (HTML estático em `public/virtualstore.html`) |
+| `/virtualstore` | Página da VirtualStore com todos os recursos (`src/app/virtualstore/page.tsx`) |
 | `/planos` | Planos, preços, comparativo de recursos (mensal ou anual) |
 | `/assinar` | Cria a conta do cliente, pede os dados da loja e o domínio e leva ao Mercado Pago |
 | `/entrar`, `/esqueci-senha` | Login único para clientes e para você |

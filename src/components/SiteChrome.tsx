@@ -47,7 +47,7 @@ export async function SiteFooter() {
           </div>
           <div>
             <h3>Produto</h3>
-            <a href="/virtualstore">VirtualStore</a>
+            <Link href="/virtualstore">VirtualStore</Link>
             <Link href="/planos">Planos e preços</Link>
             <Link href="/#como-funciona">Como funciona</Link>
           </div>
