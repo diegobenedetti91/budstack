@@ -2,14 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { planNames } from "@/lib/plans";
-import { dateBR, refundableInvoices } from "@/lib/billing";
+import { PROVIDER_LABEL, dateBR, refundableInvoices } from "@/lib/billing";
 import { STAGES, cycleLabel, dateTime, formatDocument, formatPhone, money, priceSuffix, whatsappUrl } from "@/lib/format";
 import { sourceLabel } from "@/lib/tracking";
 import { ActionForm } from "@/components/ActionForm";
 import { DomainBadge, EVENT_LABEL, InvoiceBadge, StageBadge, StatusBadge } from "@/components/Badges";
 import { adminCancelAction, reconcileAction, toggleUserBlockAction, updateStageAction } from "../../actions";
 
-const MP_SUB_LABEL: Record<string, string> = { pending: "Aguardando autorização", authorized: "Ativa", paused: "Pausada", cancelled: "Cancelada" };
+const MP_SUB_LABEL: Record<string, string> = { pending: "Aguardando autorização", authorized: "Ativa", paused: "Pausada", cancelled: "Cancelada", ACTIVE: "Ativa", INACTIVE: "Pausada", DELETED: "Encerrada" };
 
 export default async function ClientePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -64,13 +64,15 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
                 {names.get(s.plan) ?? s.plan} ({cycleLabel(s.cycle)}) · {money(s.planPriceCents)}
                 {priceSuffix(s.cycle)}
               </dd>
+              <dt>Gateway</dt>
+              <dd>{PROVIDER_LABEL[s.provider] ?? s.provider}</dd>
               <dt>Período atual</dt>
               <dd>{s.currentPeriodStart ? `${dateBR(s.currentPeriodStart)} a ${dateBR(s.currentPeriodEnd)}` : "—"}</dd>
               <dt>1º pagamento</dt>
               <dd>{dateTime(s.paidAt)}</dd>
-              {s.cycle === "MENSAL" && (
+              {(s.provider === "ASAAS" || (s.provider === "MERCADOPAGO" && s.cycle === "MENSAL")) && (
                 <>
-                  <dt>Assinatura no MP</dt>
+                  <dt>Recorrência no gateway</dt>
                   <dd>{s.mpSubscriptionStatus ? (MP_SUB_LABEL[s.mpSubscriptionStatus] ?? s.mpSubscriptionStatus) : "—"}</dd>
                 </>
               )}
@@ -95,7 +97,7 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
             </dl>
             <ActionForm action={reconcileAction} style={{ marginTop: 18 }}>
               <input type="hidden" name="id" value={s.id} />
-              <button className="btn btn-ghost btn-sm">Conferir no Mercado Pago</button>
+              <button className="btn btn-ghost btn-sm">Conferir no {PROVIDER_LABEL[s.provider] ?? "gateway"}</button>
             </ActionForm>
           </section>
 
@@ -112,7 +114,7 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
                       <th>Tipo</th>
                       <th>Valor</th>
                       <th>Situação</th>
-                      <th>MP</th>
+                      <th>Gateway</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -126,7 +128,7 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
                           {i.failureReason && <small className="muted"> {i.failureReason}</small>}
                         </td>
                         <td>
-                          <small>{i.mpPaymentId ?? "—"}</small>
+                          <small>{i.asaasPaymentId ?? i.mpPaymentId ?? (s.provider === "SIMULADO" ? "simulado" : "—")}</small>
                         </td>
                       </tr>
                     ))}

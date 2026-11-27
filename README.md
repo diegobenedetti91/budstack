@@ -79,6 +79,26 @@ Hoje o `budstack.com.br` é um HTML estático no `public_html`. Este site roda c
 6. Faça um backup do `public_html` atual antes de trocar o site.
 7. Entre em `/entrar` com o `ADMIN_EMAIL`, revise **Planos e recursos** e **Configurações** (os preços iniciais são provisórios).
 
+## Gateway de pagamento
+
+Em **Administração → Configurações → Preço e pagamento** você escolhe onde as **novas** assinaturas são cobradas. Cada assinatura continua no gateway em que nasceu, e as regras (pausa, troca de plano, cancelamento, reembolso, inadimplência) são as mesmas nos três.
+
+| Gateway | Como cobra |
+|---|---|
+| **Mercado Pago** | Mensal: assinatura no cartão. Anual: pagamento único (Pix ou cartão parcelado), com o link da renovação enviado antes do vencimento. Taxa de domínio junto no anual. |
+| **Asaas** | Assinatura recorrente mensal ou anual. O cliente escolhe **Pix, boleto ou cartão** na fatura, e o próprio Asaas gera as renovações. Taxa de domínio em cobrança avulsa. |
+| **Simulado** | Tudo dentro do site (`/conta/pagar/...`): Pix aprovado, cartão aprovado ou recusado. Nenhum dinheiro real. Só aparece com `ALLOW_SIMULATED_PAYMENTS=1`. |
+
+## Asaas
+
+1. *Asaas → Integrações → Chave de API*: copie para `ASAAS_API_KEY` (use a do **sandbox** com `ASAAS_ENV=sandbox` para testar; em produção, `ASAAS_ENV=production`).
+2. *Asaas → Integrações → Webhooks*: cadastre `https://budstack.com.br/api/webhooks/asaas`, defina um **token de autenticação** (o mesmo de `ASAAS_WEBHOOK_TOKEN`) e marque os **eventos de cobrança**.
+3. Em Configurações, escolha **Asaas** e salve.
+
+O site confere cada cobrança na API do Asaas antes de mudar qualquer coisa; avisos repetidos são ignorados. A rotina diária e o botão **Conferir no Asaas** da ficha do cliente também consultam.
+
+> Confira na documentação do Asaas as URLs de sandbox e produção antes de ativar (`ASAAS_BASE_URL` permite trocar, se mudarem).
+
 ## Mercado Pago
 
 1. *Seu negócio → Configurações → Credenciais de produção*: copie o **Access Token** para `MP_ACCESS_TOKEN`.

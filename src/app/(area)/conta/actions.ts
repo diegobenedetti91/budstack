@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { destroyOtherSessions, hashPassword, requireUser, verifyPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { BillingError, cancelSubscription, changePlan, pauseSubscription, payUrlFor, resumeSubscription, undoCancel } from "@/lib/billing";
+import { BillingError, cancelSubscription, changePlan, pauseSubscription, payMockInvoice, payUrlFor, resumeSubscription, undoCancel } from "@/lib/billing";
 import { isValidPhone } from "@/lib/validate";
 import { onlyDigits } from "@/lib/format";
 import type { ActionState } from "@/components/ActionForm";
@@ -53,6 +53,23 @@ export async function resumeAction(_: ActionState, form: FormData): Promise<Acti
 export async function changePlanAction(_: ActionState, form: FormData): Promise<ActionState> {
   const user = await requireUser();
   return run(() => changePlan(String(form.get("id") ?? ""), user.id, String(form.get("plan") ?? "")));
+}
+
+export async function payMockAction(_: ActionState, form: FormData): Promise<ActionState> {
+  const user = await requireUser();
+  const outcome = String(form.get("outcome"));
+  if (!["pix", "card_ok", "card_fail"].includes(outcome)) return { error: "Opção inválida." };
+  let res: Awaited<ReturnType<typeof payMockInvoice>>;
+  try {
+    res = await payMockInvoice(String(form.get("id") ?? ""), user.id, outcome as "pix" | "card_ok" | "card_fail");
+  } catch (e) {
+    if (e instanceof BillingError) return { error: e.message };
+    console.error("[conta] pagamento simulado:", e);
+    return { error: "Não foi possível concluir agora." };
+  }
+  if (res.failed) return { error: res.message };
+  revalidatePath("/conta");
+  redirect(`/assinar/obrigado?pedido=${res.code}`);
 }
 
 export async function payAction(_: ActionState, form: FormData): Promise<ActionState> {

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import type { Settings } from "@/lib/settings-schema";
 import { getPlans, planPriceCents, type Cycle, type PlanView } from "@/lib/plans";
-import { addMonths, dateBR, refundableInvoices } from "@/lib/billing";
+import { addMonths, dateBR, refundableInvoices, usesOwnRenewal } from "@/lib/billing";
 import { cycleLabel, money, priceSuffix } from "@/lib/format";
 import { CANCEL_REASONS } from "@/lib/cancel-reasons";
 import { ActionForm } from "@/components/ActionForm";
@@ -123,7 +123,10 @@ function SubscriptionBlock({ sub, plans, names, s, refundable, multi }: { sub: S
   if (sub.status === "ACTIVE") {
     if (sub.cancelAtPeriodEnd) lines.push(`Sua loja fica no ar até ${dateBR(sub.currentPeriodEnd)}. Nenhuma nova cobrança será feita.`);
     else if (sub.pauseFrom) lines.push(`Pausa agendada de ${dateBR(sub.pauseFrom)} a ${dateBR(sub.pauseUntil)}, sem cobrança.`);
-    else if (sub.cycle === "MENSAL") lines.push(`Renova em ${dateBR(sub.currentPeriodEnd)} por ${money(sub.nextPlanPriceCents ?? sub.planPriceCents)} no cartão${nextName ? ` (passa para o plano ${nextName})` : ""}.`);
+    else if (!usesOwnRenewal(sub))
+      lines.push(
+        `Renova em ${dateBR(sub.currentPeriodEnd)} por ${money(sub.nextPlanPriceCents ?? sub.planPriceCents)}${sub.provider === "ASAAS" ? " (a fatura chega por e-mail: Pix, boleto ou cartão)" : " no cartão"}${nextName ? `, já no plano ${nextName}` : ""}.`,
+      );
     else lines.push(`Vale até ${dateBR(sub.currentPeriodEnd)}. O link da renovação chega ${s.renewal_notice_days} dias antes${nextName ? `, já no plano ${nextName}` : ""}.`);
   }
   if (sub.status === "PAUSED") lines.push(`Pausada até ${dateBR(sub.pauseUntil)}, quando volta sozinha. Nenhuma cobrança nesse período.`);
@@ -170,7 +173,7 @@ function SubscriptionBlock({ sub, plans, names, s, refundable, multi }: { sub: S
             </div>
           </div>
           <div className="sub-hero-actions">
-            {(sub.status === "PENDING" || (sub.status === "PAST_DUE" && sub.cycle === "ANUAL") || renewal) && (
+            {(sub.status === "PENDING" || (sub.status === "PAST_DUE" && !(sub.provider === "MERCADOPAGO" && sub.cycle === "MENSAL")) || renewal) && (
               <ActionForm action={payAction}>
                 <input type="hidden" name="id" value={sub.id} />
                 <input type="hidden" name="what" value="open" />
@@ -224,7 +227,7 @@ function SubscriptionBlock({ sub, plans, names, s, refundable, multi }: { sub: S
             <Icon name="alert" className="ico sm" />
             <span>
               Pague até {dateBR(sub.graceUntil)} para manter a loja no ar.{" "}
-              {sub.cycle === "MENSAL" ? "O Mercado Pago tenta a cobrança de novo; confira o limite do cartão ou atualize-o na sua conta do Mercado Pago. " : ""}
+              {sub.provider === "MERCADOPAGO" && sub.cycle === "MENSAL" ? "O Mercado Pago tenta a cobrança de novo; confira o limite do cartão ou atualize-o na sua conta do Mercado Pago. " : ""}
               Sem pagamento, a assinatura é encerrada: sem multa, sem juros e sem nenhuma cobrança.
             </span>
           </div>

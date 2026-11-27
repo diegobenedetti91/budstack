@@ -18,6 +18,8 @@ model User {
   phone        String?
   document     String?
   passwordHash String
+  /// Cliente no Asaas (reaproveitado em novas assinaturas)
+  asaasCustomerId String?
   /// CUSTOMER | ADMIN
   role         String    @default("CUSTOMER")
   /// ACTIVE | BLOCKED
@@ -123,6 +125,10 @@ model Subscription {
   /// Valor da primeira cobrança (anual: plano + domínio; mensal: só a mensalidade)
   totalCents     Int
 
+  /// Gateway de pagamento desta assinatura: MERCADOPAGO | ASAAS | SIMULADO
+  provider String @default("MERCADOPAGO")
+  asaasSubscriptionId String?
+
   /// PENDING (aguardando 1º pagamento) | ACTIVE | PAUSED (congelada) | PAST_DUE (inadimplente, na tolerância) | CANCELED | EXPIRED (encerrada por falta de pagamento)
   status             String    @default("PENDING")
   /// Pausa ("congelar"): começa no fim do período pago e termina sozinha
@@ -163,7 +169,7 @@ model Subscription {
   mpPreapprovalId      String?
   mpPaymentId          String?
   mpDomainPreferenceId String?
-  /// Status da assinatura mensal no Mercado Pago (pending, authorized, paused, cancelled)
+  /// Status da assinatura no gateway. Mercado Pago: pending, authorized, paused, cancelled. Asaas: ACTIVE, INACTIVE, DELETED
   mpSubscriptionStatus String?
   /// Link para concluir a assinatura mensal no Mercado Pago
   mpInitPoint          String?   @db.Text
@@ -184,6 +190,7 @@ model Subscription {
 
   @@index([status, createdAt])
   @@index([mpPreapprovalId])
+  @@index([asaasSubscriptionId])
   @@index([userId])
 }
 
@@ -205,6 +212,8 @@ model Invoice {
   paidAt         DateTime?
   /// external_reference no Mercado Pago (pagamentos únicos)
   reference      String?      @unique @db.VarChar(80)
+  /// Cobrança no Asaas (pay_...)
+  asaasPaymentId String?      @unique @db.VarChar(40)
   mpPaymentId    String?      @unique @db.VarChar(40)
   mpPreferenceId String?
   payUrl         String?      @db.Text
@@ -232,6 +241,14 @@ model SubscriptionEvent {
 }
 
 // ───────── Captação (BI) ─────────
+
+/// Avisos de gateway já processados (o Asaas entrega "pelo menos uma vez").
+model WebhookEvent {
+  id        String   @id @db.VarChar(120)
+  provider  String   @db.VarChar(20)
+  type      String   @db.VarChar(60)
+  createdAt DateTime @default(now())
+}
 
 /// Visita anônima: id aleatório no cookie, sem dados pessoais.
 model PageView {

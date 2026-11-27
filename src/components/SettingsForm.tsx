@@ -18,6 +18,21 @@ function display(f: SettingField, v: unknown): string {
 }
 
 function FieldInput({ f, value }: { f: SettingField; value: unknown }) {
+  if (f.kind === "select") {
+    return (
+      <div className="cfg-options" role="radiogroup" aria-label={f.label}>
+        {f.options?.map((o) => (
+          <label key={o.value} className="cfg-option">
+            <input type="radio" name={f.key} value={o.value} defaultChecked={value === o.value} />
+            <span>
+              <b>{o.label}</b>
+              {o.hint && <small>{o.hint}</small>}
+            </span>
+          </label>
+        ))}
+      </div>
+    );
+  }
   if (f.kind === "toggle") {
     return (
       <div className="cfg-toggle">

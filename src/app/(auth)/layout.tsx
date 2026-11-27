@@ -17,7 +17,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <h2>Sua loja no ar, sua assinatura sob controle.</h2>
           <p>Acompanhe pagamentos, pause quando precisar e cancele sem burocracia. Tudo em um só lugar.</p>
           <ul>
-            {["Assinatura, cobranças e histórico", "Pausa, troca de plano e cancelamento", "Pagamento seguro pelo Mercado Pago"].map((t) => (
+            {["Assinatura, cobranças e histórico", "Pausa, troca de plano e cancelamento", "Pix, boleto ou cartão com pagamento seguro"].map((t) => (
               <li key={t}>
                 <Icon name="check" className="ico sm" /> {t}
               </li>

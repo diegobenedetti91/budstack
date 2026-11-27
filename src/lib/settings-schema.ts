@@ -4,7 +4,7 @@
  * Senhas e chaves (Mercado Pago, SMTP, CallMeBot) ficam nas variáveis de ambiente, nunca aqui.
  */
 
-export type SettingKind = "int" | "money" | "text" | "email" | "toggle" | "phone";
+export type SettingKind = "int" | "money" | "text" | "email" | "toggle" | "phone" | "select";
 
 export interface SettingField {
   key: SettingKey;
@@ -15,6 +15,8 @@ export interface SettingField {
   max?: number;
   prefix?: string;
   suffix?: string;
+  /** Opções do tipo "select" */
+  options?: { value: string; label: string; hint?: string }[];
 }
 
 export interface SettingCard {
@@ -32,6 +34,7 @@ export interface SettingSection {
 }
 
 export const DEFAULT_SETTINGS = {
+  payment_provider: "MERCADOPAGO",
   annual_months_charged: 10,
   annual_max_installments: 12,
   domain_fee_cents: 8000,
@@ -58,6 +61,22 @@ export const SETTING_SECTIONS: SettingSection[] = [
     hint: "Anual, parcelas, domínio e prazo",
     icon: "card",
     cards: [
+      {
+        title: "Gateway de pagamento",
+        description: "Onde as novas assinaturas são cobradas. Assinaturas já feitas continuam no gateway em que foram criadas.",
+        fields: [
+          {
+            key: "payment_provider",
+            label: "Gateway",
+            kind: "select",
+            options: [
+              { value: "MERCADOPAGO", label: "Mercado Pago", hint: "Mensal no cartão; anual no Pix ou cartão parcelado." },
+              { value: "ASAAS", label: "Asaas", hint: "Pix, boleto ou cartão na fatura, mensal ou anual; renovações geradas pelo Asaas." },
+              { value: "SIMULADO", label: "Simulado (testes)", hint: "Nenhum dinheiro de verdade. Exige ALLOW_SIMULATED_PAYMENTS=1 no servidor." },
+            ],
+          },
+        ],
+      },
       {
         title: "Plano anual",
         description: "Como o preço mensal de cada plano vira o valor do anual. Os preços ficam em Planos e recursos.",

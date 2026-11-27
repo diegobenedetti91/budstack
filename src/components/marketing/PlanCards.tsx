@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { PlanView, Cycle } from "@/lib/plans";
 import type { Settings } from "@/lib/settings-schema";
 import { money } from "@/lib/format";
+import { gatewayOf, planPriceNote } from "@/lib/billing-copy";
 import { Icon } from "../Icon";
 
 function annualCents(p: PlanView, s: Settings) {
@@ -25,7 +26,7 @@ export function PlanCards({ plans, cycle, s, limit }: { plans: PlanView[]; cycle
               <b>{money(cycle === "ANUAL" ? Math.round(price / 12) : price)}</b>
               <span>/mês</span>
             </div>
-            <p className="sub">{cycle === "ANUAL" ? `${money(price)} por ano · Pix ou até ${s.annual_max_installments}x` : "Cobrado todo mês no cartão"}</p>
+            <p className="sub">{planPriceNote(gatewayOf(s), cycle, annualCents(p, s), s)}</p>
             <ul>
               {features.map((f) => (
                 <li key={f.id}>

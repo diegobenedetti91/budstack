@@ -10,6 +10,8 @@ interface Props {
   domainFee: string;
   setupDays: number;
   refundDays: number;
+  /** Textos que dependem do gateway */
+  gateway: { name: string; mpEmailHint: boolean; terms: string };
   /** Dados de quem já está logado (sem senha no formulário) */
   user: { name: string; email: string; phone: string; document: string } | null;
 }
@@ -30,7 +32,7 @@ function Field({ id, label, error, hint, ...input }: { id: string; label: string
   );
 }
 
-export function CheckoutForm({ plano, ciclo, domainFee, setupDays, refundDays, user }: Props) {
+export function CheckoutForm({ plano, ciclo, domainFee, setupDays, refundDays, user, gateway }: Props) {
   const [state, action, pending] = useActionState<CheckoutState, FormData>(checkoutAction, {});
   const f = state.fields ?? {};
   const val: Record<string, string> = { name: user?.name ?? "", email: user?.email ?? "", phone: user?.phone ?? "", document: user?.document ?? "", ...state.values };
@@ -74,7 +76,7 @@ export function CheckoutForm({ plano, ciclo, domainFee, setupDays, refundDays, u
             defaultValue={val.email}
             readOnly={!!user}
             error={f.email}
-            hint={ciclo === "mensal" ? "Use o mesmo e-mail da sua conta Mercado Pago." : undefined}
+            hint={gateway.mpEmailHint ? "Use o mesmo e-mail da sua conta Mercado Pago." : undefined}
           />
           <Field id="phone" label="WhatsApp" type="tel" inputMode="tel" autoComplete="tel" placeholder="(19) 99999-9999" required defaultValue={val.phone} error={f.phone} />
         </div>
@@ -130,7 +132,7 @@ export function CheckoutForm({ plano, ciclo, domainFee, setupDays, refundDays, u
           <input type="checkbox" name="terms" defaultChecked={val.terms === "on"} />
           <span>
             Li e aceito as condições: implantação em até {setupDays} dias úteis após o envio dos materiais, reembolso integral até {refundDays} dias após o primeiro pagamento e{" "}
-            {ciclo === "mensal" ? "cobrança mensal automática no cartão, que posso cancelar quando quiser" : "pagamento anual, com o link da renovação enviado antes do vencimento"}.
+            {gateway.terms}.
           </span>
         </label>
         {f.terms && <p style={{ color: "var(--red)", fontSize: 12.5, fontWeight: 600, marginTop: 6 }}>{f.terms}</p>}
@@ -138,7 +140,7 @@ export function CheckoutForm({ plano, ciclo, domainFee, setupDays, refundDays, u
           {pending ? "Abrindo o pagamento…" : "Ir para o pagamento"}
         </button>
         <p className="muted" style={{ fontSize: 13, textAlign: "center", marginTop: 10 }}>
-          Você será levado ao Mercado Pago para pagar com segurança.
+          Você será levado ao {gateway.name} para pagar com segurança.
         </p>
       </section>
     </form>

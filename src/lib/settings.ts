@@ -36,6 +36,15 @@ export function parseSetting(key: SettingKey, raw: FormDataEntryValue | null): {
     case "email":
       if (s && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s)) return { error: `${f.label}: e-mail inválido.` };
       return { value: s.toLowerCase() };
+    case "select": {
+      if (!f.options?.some((o) => o.value === s)) return { error: `${f.label}: opção inválida.` };
+      if (key === "payment_provider") {
+        if (s === "ASAAS" && !process.env.ASAAS_API_KEY) return { error: "Para usar o Asaas, configure ASAAS_API_KEY e ASAAS_WEBHOOK_TOKEN no servidor." };
+        if (s === "MERCADOPAGO" && !process.env.MP_ACCESS_TOKEN) return { error: "Para usar o Mercado Pago, configure MP_ACCESS_TOKEN no servidor." };
+        if (s === "SIMULADO" && process.env.ALLOW_SIMULATED_PAYMENTS !== "1") return { error: "O modo simulado só pode ser ligado com ALLOW_SIMULATED_PAYMENTS=1 no servidor (nunca em produção com clientes reais)." };
+      }
+      return { value: s };
+    }
     case "phone": {
       const d = s.replace(/\D/g, "");
       if (d && (d.length < 12 || d.length > 13)) return { error: `${f.label}: use DDI + DDD + número, ex.: 5519999999999.` };

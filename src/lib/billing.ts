@@ -9,7 +9,7 @@ import {
   createPreapproval,
   createPreference,
   getPreapproval,
-  refundPayment,
+  refundPayment as mpRefundPayment,
   searchAuthorizedPayments,
   searchPayments,
   setPreapprovalAmount,
@@ -17,13 +17,18 @@ import {
   siteUrl,
   type MpPayment,
 } from "./mercadopago";
+import * as asaas from "./asaas";
 import { emailCustomer, notifyNewPaid, notifyOwner, subscriptionSummary } from "./notify";
 import { money } from "./format";
 
 /**
  * Regras de assinatura (padrão de mercado + Código de Defesa do Consumidor):
- *  - Mensal: assinatura no cartão do Mercado Pago, cobrada todo mês. Anual: pagamento único (Pix ou cartão
- *    parcelado); alguns dias antes do vencimento o cliente recebe o link da renovação, com lembretes.
+ *  - Gateway escolhido no painel (vale para novas assinaturas; cada assinatura fica no gateway em que nasceu):
+ *    · Mercado Pago: mensal no cartão (assinatura); anual em pagamento único (Pix ou cartão parcelado), com o
+ *      link da renovação enviado alguns dias antes do vencimento.
+ *    · Asaas: assinatura recorrente mensal ou anual; o cliente escolhe Pix, boleto ou cartão na fatura e o
+ *      próprio Asaas gera as renovações. Taxa de domínio em cobrança avulsa.
+ *    · Simulado: tudo dentro do site, sem dinheiro real (só com ALLOW_SIMULATED_PAYMENTS=1), para testes.
  *  - Cancelar quando quiser, sem multa: o acesso segue até o fim do período pago e nada mais é cobrado.
  *    Dá para desfazer antes do fim do período.
  *  - Arrependimento (CDC art. 49): até N dias (padrão 7) do 1º pagamento, cancelamento com reembolso integral.
@@ -39,6 +44,23 @@ export class BillingError extends Error {}
 
 const DAY = 864e5;
 const LIVE = ["PENDING", "ACTIVE", "PAUSED", "PAST_DUE"];
+
+export type Provider = "MERCADOPAGO" | "ASAAS" | "SIMULADO";
+export const PROVIDER_LABEL: Record<string, string> = { MERCADOPAGO: "Mercado Pago", ASAAS: "Asaas", SIMULADO: "Simulado (teste)" };
+
+/** Gateway das novas assinaturas (configurações do painel). */
+export async function activeProvider(): Promise<Provider> {
+  const p = (await getSettings()).payment_provider;
+  if (p === "SIMULADO") {
+    if (process.env.ALLOW_SIMULATED_PAYMENTS !== "1") throw new BillingError("O pagamento está em modo de teste, que foi desligado. Fale com a BudStack.");
+    return "SIMULADO";
+  }
+  return p === "ASAAS" ? "ASAAS" : "MERCADOPAGO";
+}
+
+/** Renovação feita pelo próprio site (link de pagamento): Mercado Pago anual e Simulado. Nos outros, o gateway cobra sozinho. */
+export const usesOwnRenewal = (s: Pick<Subscription, "provider" | "cycle">) => s.provider === "SIMULADO" || (s.provider === "MERCADOPAGO" && s.cycle === "ANUAL");
+const cycleMonths = (c: string) => (c === "ANUAL" ? 12 : 1);
 
 export function addMonths(d: Date, n: number): Date {
   const r = new Date(d);
@@ -102,16 +124,20 @@ export interface StartInput {
   attribution: { visitorId?: string | null; source?: string | null; medium?: string | null; campaign?: string | null };
 }
 
-/** Cria a assinatura e o pagamento no Mercado Pago. Retorna o link para onde o cliente vai pagar. */
+/** Cria a assinatura e o pagamento no gateway ativo. Retorna o link para onde o cliente vai pagar. */
 export async function startSubscription(input: StartInput): Promise<string> {
   const s = await getSettings();
+  const provider = await activeProvider();
   const planCents = planPriceCents(input.plan, input.cycle, s);
   const domainFee = input.domainOption === "REGISTER" ? s.domain_fee_cents : 0;
-  const total = input.cycle === "ANUAL" ? planCents + domainFee : planCents;
+  // Taxa de domínio no 1º pagamento: só quando ele é uma cobrança única (anual no MP ou no simulado)
+  const domainInFirst = input.cycle === "ANUAL" && provider !== "ASAAS";
+  const total = domainInFirst ? planCents + domainFee : planCents;
 
   const sub = await prisma.subscription.create({
     data: {
       code: newCode(),
+      provider,
       userId: input.userId,
       plan: input.plan.id,
       cycle: input.cycle,
@@ -135,13 +161,22 @@ export async function startSubscription(input: StartInput): Promise<string> {
 
   const title = `VirtualStore ${input.plan.name} · ${cycleWord(input.cycle)}`;
   try {
-    if (input.cycle === "ANUAL") {
+    if (provider === "ASAAS") {
+      const customer = await ensureAsaasCustomer(sub);
+      const created = await asaas.createSubscription({ customer, valueCents: planCents, cycle: input.cycle === "ANUAL" ? "YEARLY" : "MONTHLY", nextDueDate: asaas.asaasDate(), description: title, externalReference: sub.code });
+      await prisma.subscription.update({ where: { id: sub.id }, data: { asaasSubscriptionId: created.id, mpSubscriptionStatus: created.status ?? "ACTIVE" } });
+      const first = (await asaas.listSubscriptionPayments(created.id))[0];
+      if (!first?.invoiceUrl) throw new Error("O Asaas não devolveu a fatura da assinatura");
+      await prisma.invoice.create({ data: { subscriptionId: sub.id, kind: "PLAN", amountCents: Math.round(first.value * 100), dueDate: new Date(`${first.dueDate}T12:00:00-03:00`), asaasPaymentId: first.id, payUrl: first.invoiceUrl } });
+      return first.invoiceUrl;
+    }
+    if (input.cycle === "ANUAL" || provider === "SIMULADO") {
       const inv = await createPaymentInvoice(sub, {
         kind: "PLAN",
         amountCents: total,
-        domainCents: domainFee,
+        domainCents: domainInFirst ? domainFee : 0,
         dueDate: new Date(),
-        title: domainFee ? `${title} + registro de domínio` : title,
+        title: domainInFirst && domainFee ? `${title} + registro de domínio` : title,
         maxInstallments: s.annual_max_installments,
       });
       return inv.payUrl!;
@@ -159,7 +194,16 @@ export async function startSubscription(input: StartInput): Promise<string> {
   }
 }
 
-/** Cobrança de pagamento único (1º anual, renovação anual ou taxa de domínio) com link do Mercado Pago. */
+/** Cliente no Asaas (criado uma vez por usuário e reaproveitado). */
+async function ensureAsaasCustomer(sub: Subscription): Promise<string> {
+  const user = sub.userId ? await prisma.user.findUnique({ where: { id: sub.userId } }) : null;
+  if (user?.asaasCustomerId) return user.asaasCustomerId;
+  const id = await asaas.createCustomer({ name: sub.customerName, email: sub.customerEmail, cpfCnpj: sub.customerDocument, phone: sub.customerPhone, externalReference: sub.userId ?? sub.code });
+  if (user) await prisma.user.update({ where: { id: user.id }, data: { asaasCustomerId: id } });
+  return id;
+}
+
+/** Cobrança de pagamento único (1º anual, renovação, taxa de domínio) com o link do gateway da assinatura. */
 async function createPaymentInvoice(
   sub: Subscription,
   o: { kind: "PLAN" | "DOMAIN"; amountCents: number; domainCents?: number; dueDate: Date; title: string; maxInstallments: number; expiresAt?: Date },
@@ -168,6 +212,15 @@ async function createPaymentInvoice(
   const inv = await prisma.invoice.create({
     data: { subscriptionId: sub.id, kind: o.kind, amountCents: o.amountCents, domainCents: o.domainCents ?? 0, dueDate: o.dueDate, reference },
   });
+  if (sub.provider === "SIMULADO") {
+    return prisma.invoice.update({ where: { id: inv.id }, data: { payUrl: `${siteUrl()}/conta/pagar/${inv.id}` } });
+  }
+  if (sub.provider === "ASAAS") {
+    const customer = await ensureAsaasCustomer(sub);
+    const due = o.dueDate > new Date() ? o.dueDate : new Date();
+    const p = await asaas.createPayment({ customer, valueCents: o.amountCents, dueDate: asaas.asaasDate(due), description: o.title, externalReference: reference });
+    return prisma.invoice.update({ where: { id: inv.id }, data: { asaasPaymentId: p.id, payUrl: p.invoiceUrl ?? null } });
+  }
   const pref = await createPreference({
     externalReference: reference,
     title: o.title,
@@ -208,20 +261,80 @@ function approvedCovering(payments: MpPayment[], cents: number): MpPayment | und
  * (aviso repetido, página de obrigado, botão do painel, rotina): cada efeito acontece uma vez só.
  */
 export async function reconcile(sub: Subscription): Promise<Subscription> {
-  if (sub.mpPreapprovalId) await reconcileMonthly(sub);
-  const open = await prisma.invoice.findMany({ where: { subscriptionId: sub.id, reference: { not: null }, status: { in: ["PENDING", "FAILED", "CANCELED"] } } });
-  for (const inv of open) {
-    const ok = approvedCovering(await searchPayments(inv.reference!), inv.amountCents);
-    if (ok) await onInvoicePaid(inv, String(ok.id), ok.date_approved ? new Date(ok.date_approved) : new Date());
+  if (sub.provider === "ASAAS") {
+    await reconcileAsaas(sub);
+  } else if (sub.provider === "MERCADOPAGO") {
+    if (sub.mpPreapprovalId) await reconcileMonthly(sub);
+    const open = await prisma.invoice.findMany({ where: { subscriptionId: sub.id, reference: { not: null }, status: { in: ["PENDING", "FAILED", "CANCELED"] } } });
+    for (const inv of open) {
+      const ok = approvedCovering(await searchPayments(inv.reference!), inv.amountCents);
+      if (ok) await onInvoicePaid(inv, String(ok.id), ok.date_approved ? new Date(ok.date_approved) : new Date());
+    }
   }
+  // Simulado: nada a consultar (os pagamentos acontecem na própria página do site)
   return prisma.subscription.findUniqueOrThrow({ where: { id: sub.id } });
 }
 
+/** Asaas: lê as cobranças da assinatura e as avulsas, e aplica pagamentos, atrasos, estornos e cancelamento externo. */
+async function reconcileAsaas(sub: Subscription): Promise<void> {
+  if (sub.asaasSubscriptionId) {
+    const remote = await asaas.getSubscription(sub.asaasSubscriptionId).catch(() => null);
+    const payments = await asaas.listSubscriptionPayments(sub.asaasSubscriptionId);
+    let lastPaidIdx = -1; // lista já vem ordenada por vencimento
+    for (const [i, p] of payments.entries()) {
+      await applyAsaasPayment(sub, p);
+      if (asaas.isPaid(p)) lastPaidIdx = i;
+      Object.assign(sub, await prisma.subscription.findUniqueOrThrow({ where: { id: sub.id } }));
+    }
+    if (payments.some((p, i) => p.status === "OVERDUE" && !p.deleted && i > lastPaidIdx)) {
+      await markPastDue(sub, "A cobrança venceu sem pagamento.");
+    }
+    // Assinatura apagada direto no painel do Asaas
+    if (remote?.deleted && sub.mpSubscriptionStatus !== "DELETED") {
+      await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "DELETED" } });
+      sub.mpSubscriptionStatus = "DELETED";
+      if (sub.status === "PENDING") await endSubscription(sub, "CANCELED", "not_paid");
+      else if (sub.status === "PAST_DUE") await expire(sub);
+      else if (sub.status === "PAUSED") await endSubscription(sub, "CANCELED", "canceled");
+      else if (sub.status === "ACTIVE" && !sub.cancelAtPeriodEnd) {
+        await prisma.subscription.update({ where: { id: sub.id }, data: { cancelAtPeriodEnd: true, canceledAt: new Date(), cancelReason: "Cancelada no Asaas" } });
+        await event(sub.id, "cancel_requested", 0, "Cancelada no Asaas");
+        await notifyOwner(`Assinatura cancelada no Asaas: ${sub.storeName}`, `Acesso até ${dateBR(sub.currentPeriodEnd)}.\n\n${subscriptionSummary(sub, await planName(sub.plan))}`);
+      }
+    }
+  }
+  // Cobranças avulsas (taxa de domínio, etc.) ainda não pagas
+  const open = await prisma.invoice.findMany({ where: { subscriptionId: sub.id, asaasPaymentId: { not: null }, reference: { not: null }, status: { in: ["PENDING", "FAILED"] } } });
+  for (const inv of open) await applyAsaasPayment(sub, await asaas.getPayment(inv.asaasPaymentId!), inv);
+}
+
+async function applyAsaasPayment(sub: Subscription, p: asaas.AsaasPayment, known?: Invoice): Promise<void> {
+  let inv = known ?? (await prisma.invoice.findUnique({ where: { asaasPaymentId: p.id } }));
+  if (!inv) {
+    if (p.deleted) return;
+    inv = await prisma.invoice.create({
+      data: { subscriptionId: sub.id, kind: "PLAN", amountCents: Math.round(p.value * 100), dueDate: new Date(`${p.dueDate}T12:00:00-03:00`), asaasPaymentId: p.id, payUrl: p.invoiceUrl ?? null },
+    });
+  }
+  if (p.invoiceUrl && p.invoiceUrl !== inv.payUrl) await prisma.invoice.update({ where: { id: inv.id }, data: { payUrl: p.invoiceUrl } });
+  if (p.deleted) {
+    if (inv.status === "PENDING" || inv.status === "FAILED") await prisma.invoice.update({ where: { id: inv.id }, data: { status: "CANCELED" } });
+    return;
+  }
+  if (asaas.isPaid(p) && inv.status !== "PAID" && inv.status !== "REFUNDED") {
+    await onInvoicePaid(inv, null, asaas.paidDate(p));
+  } else if (asaas.isRefunded(p) && inv.status === "PAID") {
+    await prisma.invoice.update({ where: { id: inv.id }, data: { status: "REFUNDED" } });
+  } else if (p.status === "OVERDUE" && inv.status === "PENDING") {
+    await prisma.invoice.update({ where: { id: inv.id }, data: { status: "FAILED", failureReason: "Venceu sem pagamento" } });
+  }
+}
+
 /** Pagamento único confirmado: ativa, renova ou registra a taxa de domínio. */
-async function onInvoicePaid(inv: Invoice, mpPaymentId: string, paidAt: Date): Promise<void> {
+async function onInvoicePaid(inv: Invoice, mpPaymentId: string | null, paidAt: Date): Promise<void> {
   const { count } = await prisma.invoice.updateMany({
     where: { id: inv.id, status: { notIn: ["PAID", "REFUNDED"] } },
-    data: { status: "PAID", paidAt, mpPaymentId },
+    data: { status: "PAID", paidAt, ...(mpPaymentId ? { mpPaymentId } : {}) },
   });
   if (count !== 1) return;
   const sub = await prisma.subscription.findUniqueOrThrow({ where: { id: inv.subscriptionId } });
@@ -243,19 +356,19 @@ async function onInvoicePaid(inv: Invoice, mpPaymentId: string, paidAt: Date): P
     }
   }
 
-  // Plano anual: pago antes do vencimento estende a partir do fim do período; em atraso, a partir de agora.
+  // Pago antes do vencimento estende a partir do fim do período; em atraso, a partir de agora.
   // Pago durante a pausa: o novo ano começa quando a pausa termina (a assinatura segue pausada até lá).
   const first = !sub.paidAt;
   const paused = sub.status === "PAUSED" && !!sub.pauseUntil;
   const start = paused ? sub.pauseUntil! : sub.currentPeriodEnd && sub.currentPeriodEnd > paidAt && sub.status === "ACTIVE" ? sub.currentPeriodEnd : paidAt;
-  const end = addMonths(start, 12);
+  const end = addMonths(start, cycleMonths(sub.cycle));
   const wasLate = sub.status === "PAST_DUE" || sub.status === "EXPIRED";
   const updated = await prisma.subscription.update({
     where: { id: sub.id },
     data: {
       status: paused ? "PAUSED" : "ACTIVE",
       paidAt: sub.paidAt ?? paidAt,
-      mpPaymentId: sub.mpPaymentId ?? mpPaymentId,
+      mpPaymentId: sub.mpPaymentId ?? mpPaymentId ?? undefined,
       currentPeriodStart: start,
       currentPeriodEnd: end,
       graceUntil: null,
@@ -387,19 +500,29 @@ async function markPastDue(sub: Subscription, reason: string): Promise<void> {
   await emailCustomer(sub.customerEmail, "Não confirmamos o pagamento da sua assinatura", [
     "Não confirmamos o pagamento da sua assinatura",
     `${reason} Sua loja ${sub.storeName} continua funcionando até ${dateBR(graceUntil)}.`,
-    sub.cycle === "MENSAL"
+    sub.provider === "MERCADOPAGO" && sub.cycle === "MENSAL"
       ? "O Mercado Pago vai tentar a cobrança de novo. Confira se o cartão tem limite ou atualize-o na sua conta do Mercado Pago."
-      : "Para manter a loja no ar, pague a renovação pelo link na sua área de cliente.",
+      : "Para manter a loja no ar, pague a cobrança pelo link na sua área de cliente.",
     "Sem pagamento até essa data, a assinatura é encerrada, sem multa e sem juros.",
   ], { label: "Ver minha assinatura", url: "/conta" });
   await notifyOwner(`Cliente inadimplente: ${sub.storeName}`, `${reason}\nTolerância até ${dateBR(graceUntil)}.\n\n${subscriptionSummary(sub, name)}`);
 }
 
 async function stopCharging(sub: Subscription): Promise<void> {
-  if (sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") {
+  if (sub.provider === "MERCADOPAGO" && sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") {
     await cancelPreapproval(sub.mpPreapprovalId);
     await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "cancelled" } });
     sub.mpSubscriptionStatus = "cancelled";
+  }
+  if (sub.provider === "ASAAS") {
+    if (sub.asaasSubscriptionId && sub.mpSubscriptionStatus !== "DELETED") {
+      await asaas.deleteSubscription(sub.asaasSubscriptionId);
+      await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "DELETED" } });
+      sub.mpSubscriptionStatus = "DELETED";
+    }
+    // Avulsas em aberto (ex.: taxa de domínio) deixam de ser cobradas
+    const open = await prisma.invoice.findMany({ where: { subscriptionId: sub.id, asaasPaymentId: { not: null }, status: { in: ["PENDING", "FAILED"] } } });
+    for (const inv of open) await asaas.deletePayment(inv.asaasPaymentId!).catch((e) => console.warn("[billing] não apagou cobrança no Asaas:", String(e).slice(0, 200)));
   }
   await prisma.invoice.updateMany({ where: { subscriptionId: sub.id, status: { in: ["PENDING", "FAILED"] } }, data: { status: "CANCELED" } });
 }
@@ -442,7 +565,9 @@ async function ownedSubscription(subId: string, userId: string | null): Promise<
 export async function refundableInvoices(sub: Subscription): Promise<Invoice[]> {
   const s = await getSettings();
   if (sub.status !== "ACTIVE" || !sub.paidAt || sub.paidAt < addDays(new Date(), -s.refund_days)) return [];
-  return prisma.invoice.findMany({ where: { subscriptionId: sub.id, status: "PAID", mpPaymentId: { not: null } } });
+  return prisma.invoice.findMany({
+    where: { subscriptionId: sub.id, status: "PAID", ...(sub.provider === "SIMULADO" ? {} : { OR: [{ mpPaymentId: { not: null } }, { asaasPaymentId: { not: null } }] }) },
+  });
 }
 
 /**
@@ -463,7 +588,8 @@ export async function cancelSubscription(subId: string, userId: string | null, o
     const invs = await refundableInvoices(sub);
     if (!invs.length) throw new BillingError(`O reembolso integral vale até ${s.refund_days} dias após o primeiro pagamento.`);
     for (const inv of invs) {
-      await refundPayment(inv.mpPaymentId!, inv.id);
+      if (inv.asaasPaymentId) await asaas.refundPayment(inv.asaasPaymentId);
+      else if (inv.mpPaymentId) await mpRefundPayment(inv.mpPaymentId, inv.id);
       await prisma.invoice.update({ where: { id: inv.id }, data: { status: "REFUNDED" } });
     }
     const total = invs.reduce((a, i) => a + i.amountCents, 0);
@@ -509,7 +635,19 @@ export async function undoCancel(subId: string, userId: string): Promise<{ messa
   if (sub.status !== "ACTIVE" || !sub.cancelAtPeriodEnd) throw new BillingError("Não há cancelamento para desfazer.");
   if (!sub.currentPeriodEnd || sub.currentPeriodEnd <= new Date()) throw new BillingError("O período já terminou: assine de novo.");
   let redirect: string | undefined;
-  if (sub.cycle === "MENSAL") {
+  if (sub.provider === "ASAAS") {
+    // Nova recorrência a partir do fim do período pago (sem cobrar agora)
+    const customer = await ensureAsaasCustomer(sub);
+    const created = await asaas.createSubscription({
+      customer,
+      valueCents: sub.planPriceCents,
+      cycle: sub.cycle === "ANUAL" ? "YEARLY" : "MONTHLY",
+      nextDueDate: asaas.asaasDate(sub.currentPeriodEnd),
+      description: `VirtualStore ${await planName(sub.plan)} · ${cycleWord(sub.cycle)}`,
+      externalReference: sub.code,
+    });
+    await prisma.subscription.update({ where: { id: sub.id }, data: { asaasSubscriptionId: created.id, mpSubscriptionStatus: created.status ?? "ACTIVE" } });
+  } else if (sub.provider === "MERCADOPAGO" && sub.cycle === "MENSAL") {
     const pre = await createPreapproval({
       externalReference: sub.code,
       reason: `VirtualStore ${await planName(sub.plan)} · mensal`,
@@ -525,7 +663,7 @@ export async function undoCancel(subId: string, userId: string): Promise<{ messa
   await prisma.subscription.update({ where: { id: sub.id }, data: { cancelAtPeriodEnd: false, canceledAt: null, cancelReason: null } });
   await event(sub.id, "cancel_undone");
   await notifyOwner(`Cancelamento desfeito: ${sub.storeName}`, subscriptionSummary(sub, await planName(sub.plan)));
-  return { message: sub.cycle === "MENSAL" ? "Autorize o cartão no Mercado Pago para continuar a assinatura." : "Cancelamento desfeito: sua assinatura continua.", redirect };
+  return { message: redirect ? "Autorize o cartão no Mercado Pago para continuar a assinatura." : "Cancelamento desfeito: sua assinatura continua.", redirect };
 }
 
 /** Link para pagar o que está em aberto: 1º pagamento, renovação anual ou taxa de domínio. */
@@ -533,16 +671,18 @@ export async function payUrlFor(subId: string, userId: string, what: "open" | "d
   const sub = await ownedSubscription(subId, userId);
   const s = await getSettings();
   if (what === "domain") {
-    if (sub.domainOption !== "REGISTER" || sub.domainPaidAt || !["ACTIVE", "PAST_DUE"].includes(sub.status)) throw new BillingError("Não há taxa de domínio a pagar.");
+    if (sub.domainOption !== "REGISTER" || sub.domainPaidAt || !["ACTIVE", "PAST_DUE", "PAUSED"].includes(sub.status)) throw new BillingError("Não há taxa de domínio a pagar.");
     const open = await prisma.invoice.findFirst({ where: { subscriptionId: sub.id, kind: "DOMAIN", status: "PENDING" } });
     if (open?.payUrl) return open.payUrl;
     const inv = await createPaymentInvoice(sub, { kind: "DOMAIN", amountCents: sub.domainFeeCents, dueDate: new Date(), title: `Registro do domínio ${sub.domain} (1 ano)`, maxInstallments: 1 });
     return inv.payUrl!;
   }
-  if (sub.status === "PENDING" && sub.cycle === "MENSAL" && sub.mpInitPoint) return sub.mpInitPoint;
-  const open = await prisma.invoice.findFirst({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING", payUrl: { not: null } }, orderBy: { createdAt: "desc" } });
+  if (sub.provider === "MERCADOPAGO" && sub.status === "PENDING" && sub.cycle === "MENSAL" && sub.mpInitPoint) return sub.mpInitPoint;
+  // Asaas e simulado: a cobrança vencida continua pagável pelo mesmo link
+  const statuses = sub.provider === "MERCADOPAGO" ? ["PENDING"] : ["PENDING", "FAILED"];
+  const open = await prisma.invoice.findFirst({ where: { subscriptionId: sub.id, kind: "PLAN", status: { in: statuses }, payUrl: { not: null } }, orderBy: { createdAt: "desc" } });
   if (open?.payUrl) return open.payUrl;
-  if (sub.cycle === "ANUAL" && sub.status === "PAST_DUE") return (await ensureRenewalInvoice(sub, s.annual_max_installments)).payUrl!;
+  if (usesOwnRenewal(sub) && sub.status === "PAST_DUE") return (await ensureRenewalInvoice(sub, s.annual_max_installments)).payUrl!;
   throw new BillingError("Não há pagamento em aberto.");
 }
 
@@ -561,6 +701,25 @@ async function ensureRenewalInvoice(sub: Subscription, maxInstallments: number):
   });
 }
 
+// ───────── Pagamento simulado (gateway "SIMULADO", só para testes) ─────────
+
+/** Paga (ou recusa) uma cobrança no modo simulado. Nenhum dinheiro de verdade. */
+export async function payMockInvoice(invoiceId: string, userId: string, outcome: "pix" | "card_ok" | "card_fail"): Promise<{ message: string; code: string; failed: boolean }> {
+  const inv = await prisma.invoice.findUnique({ where: { id: invoiceId }, include: { subscription: true } });
+  if (!inv || inv.subscription.userId !== userId) throw new BillingError("Cobrança não encontrada.");
+  if (inv.subscription.provider !== "SIMULADO") throw new BillingError("Esta cobrança é paga no gateway.");
+  const sub = inv.subscription;
+  if (inv.status === "PAID") return { message: "Esta cobrança já está paga.", code: sub.code, failed: false };
+  if (inv.status !== "PENDING" && inv.status !== "FAILED") throw new BillingError("Esta cobrança não está em aberto.");
+  if (outcome === "card_fail") {
+    await prisma.invoice.update({ where: { id: inv.id }, data: { status: "FAILED", failureReason: "Cartão recusado (simulação)" } });
+    if (sub.status === "ACTIVE") await markPastDue(sub, "O cartão foi recusado (simulação).");
+    return { message: "Pagamento recusado (simulação). Tente de novo com outra forma.", code: sub.code, failed: true };
+  }
+  await onInvoicePaid(inv, null, new Date());
+  return { message: outcome === "pix" ? "Pix aprovado (simulação)." : "Cartão aprovado (simulação).", code: sub.code, failed: false };
+}
+
 // ───────── Pausa ("congelar") e troca de plano ─────────
 
 /** Pausar de 1 a N meses a partir do fim do período pago. Sem cobrança na pausa; volta sozinha. */
@@ -575,10 +734,20 @@ export async function pauseSubscription(subId: string, userId: string, months: n
     const next = addMonths(sub.lastPauseAt, s.pause_cooldown_months);
     if (new Date() < next) throw new BillingError(`Você pode pausar de novo a partir de ${dateBR(next)}.`);
   }
-  // Mensal: a assinatura no Mercado Pago para de cobrar já (o período atual está pago)
-  if (sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") {
+  // Mensal no Mercado Pago: a assinatura para de cobrar já (o período atual está pago)
+  if (sub.provider === "MERCADOPAGO" && sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") {
     await setPreapprovalStatus(sub.mpPreapprovalId, "paused");
     await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "paused" } });
+  }
+  // Asaas: a recorrência fica inativa e as cobranças já geradas para o período da pausa são apagadas
+  if (sub.provider === "ASAAS" && sub.asaasSubscriptionId) {
+    await asaas.setSubscriptionStatus(sub.asaasSubscriptionId, "INACTIVE");
+    const from = asaas.asaasDate(sub.currentPeriodEnd);
+    for (const p of await asaas.listSubscriptionPayments(sub.asaasSubscriptionId)) {
+      if (p.status === "PENDING" && !p.deleted && p.dueDate >= from) await asaas.deletePayment(p.id).catch(() => {});
+    }
+    await prisma.invoice.updateMany({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING", asaasPaymentId: { not: null } }, data: { status: "CANCELED" } });
+    await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "INACTIVE" } });
   }
   // Anual: link de renovação já gerado deixa de valer (é refeito perto do fim da pausa)
   await prisma.invoice.updateMany({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING" }, data: { status: "CANCELED" } });
@@ -600,7 +769,11 @@ export async function pauseSubscription(subId: string, userId: string, months: n
 export async function resumeSubscription(subId: string, userId: string): Promise<string> {
   const sub = await ownedSubscription(subId, userId);
   if (sub.status === "ACTIVE" && sub.pauseFrom) {
-    if (sub.mpPreapprovalId && sub.mpSubscriptionStatus === "paused") {
+    if (sub.provider === "ASAAS" && sub.asaasSubscriptionId && sub.mpSubscriptionStatus === "INACTIVE") {
+      await asaas.setSubscriptionStatus(sub.asaasSubscriptionId, "ACTIVE", asaas.asaasDate(sub.currentPeriodEnd));
+      await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "ACTIVE" } });
+    }
+    if (sub.provider === "MERCADOPAGO" && sub.mpPreapprovalId && sub.mpSubscriptionStatus === "paused") {
       await setPreapprovalStatus(sub.mpPreapprovalId, "authorized");
       await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "authorized" } });
     }
@@ -611,7 +784,7 @@ export async function resumeSubscription(subId: string, userId: string): Promise
   }
   if (sub.status === "PAUSED") {
     await restart(sub, new Date());
-    return sub.cycle === "MENSAL" ? "Assinatura retomada: a cobrança mensal volta no seu cartão." : "Assinatura retomada.";
+    return sub.provider === "MERCADOPAGO" && sub.cycle === "MENSAL" ? "Assinatura retomada: a cobrança mensal volta no seu cartão." : "Assinatura retomada: a cobrança do novo período foi gerada.";
   }
   throw new BillingError("A assinatura não está pausada.");
 }
@@ -631,8 +804,18 @@ async function startPause(sub: Subscription): Promise<void> {
 /** Volta da pausa: assinatura ativa de novo a partir de `start`, com a cobrança do novo período. */
 async function restart(sub: Subscription, start: Date): Promise<void> {
   const name = await planName(sub.nextPlan ?? sub.plan);
-  const prepaid = sub.cycle === "ANUAL" && !!sub.currentPeriodEnd && sub.currentPeriodEnd > start && !!sub.pauseUntil && sub.currentPeriodStart?.getTime() === sub.pauseUntil.getTime();
-  if (sub.mpPreapprovalId && sub.mpSubscriptionStatus === "paused") {
+  const prepaid = usesOwnRenewal(sub) && !!sub.currentPeriodEnd && sub.currentPeriodEnd > start && !!sub.pauseUntil && sub.currentPeriodStart?.getTime() === sub.pauseUntil.getTime();
+  if (sub.provider === "ASAAS" && sub.asaasSubscriptionId && sub.mpSubscriptionStatus === "INACTIVE") {
+    try {
+      // Se houver troca de plano agendada, o novo valor já vale nesta cobrança
+      if (sub.nextPlan && sub.nextPlanPriceCents) await asaas.updateSubscriptionValue(sub.asaasSubscriptionId, sub.nextPlanPriceCents, `VirtualStore ${await planName(sub.nextPlan)} · ${cycleWord(sub.cycle)}`);
+      await asaas.setSubscriptionStatus(sub.asaasSubscriptionId, "ACTIVE", asaas.asaasDate(start));
+      await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "ACTIVE" } });
+    } catch (err) {
+      console.error("[billing] não foi possível retomar no Asaas:", err);
+    }
+  }
+  if (sub.provider === "MERCADOPAGO" && sub.mpPreapprovalId && sub.mpSubscriptionStatus === "paused") {
     try {
       await setPreapprovalStatus(sub.mpPreapprovalId, "authorized");
       await prisma.subscription.update({ where: { id: sub.id }, data: { mpSubscriptionStatus: "authorized" } });
@@ -656,16 +839,17 @@ async function restart(sub: Subscription, start: Date): Promise<void> {
     "Sua assinatura voltou",
     prepaid
       ? `A pausa terminou e a loja ${sub.storeName} está ativa de novo, até ${dateBR(sub.currentPeriodEnd)}.`
-      : sub.cycle === "MENSAL"
+      : sub.provider === "MERCADOPAGO" && sub.cycle === "MENSAL"
         ? `A pausa terminou e a loja ${sub.storeName} está ativa de novo. A mensalidade do plano ${name} volta a ser cobrada no seu cartão.`
-        : `A pausa terminou. Para manter a loja ${sub.storeName} no ar, pague a renovação na sua área de cliente.`,
+        : `A pausa terminou. Para manter a loja ${sub.storeName} no ar, pague a cobrança do novo período na sua área de cliente.`,
   ], { label: "Ver minha assinatura", url: "/conta" });
   await notifyOwner(`Pausa terminou: ${sub.storeName}`, `Reative a loja.\n\n${subscriptionSummary(sub, name)}`);
-  if (sub.cycle === "ANUAL" && !prepaid) {
+  if (usesOwnRenewal(sub) && !prepaid) {
     const s = await getSettings();
     await ensureRenewalInvoice(sub, s.annual_max_installments);
-    await markPastDue(sub, "A pausa terminou e a renovação anual ainda não foi paga.");
+    await markPastDue(sub, "A pausa terminou e a cobrança do novo período ainda não foi paga.");
   }
+  if (sub.provider === "ASAAS") await reconcileAsaas(sub).catch((err) => console.error("[billing] conferência no Asaas:", err));
 }
 
 /** Trocar de plano: vale a partir da próxima renovação, sem cobrança dupla. Escolher o plano atual desfaz a troca. */
@@ -677,7 +861,8 @@ export async function changePlan(subId: string, userId: string, planId: string):
 
   if (planId === sub.plan) {
     if (!sub.nextPlan) throw new BillingError("Esse já é o seu plano.");
-    if (sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") await setPreapprovalAmount(sub.mpPreapprovalId, sub.planPriceCents);
+    if (sub.provider === "MERCADOPAGO" && sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") await setPreapprovalAmount(sub.mpPreapprovalId, sub.planPriceCents);
+    if (sub.provider === "ASAAS" && sub.asaasSubscriptionId) await asaas.updateSubscriptionValue(sub.asaasSubscriptionId, sub.planPriceCents, `VirtualStore ${await planName(sub.plan)} · ${cycleWord(sub.cycle)}`);
     await prisma.invoice.updateMany({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING" }, data: { status: "CANCELED" } });
     await prisma.subscription.update({ where: { id: sub.id }, data: { nextPlan: null, nextPlanPriceCents: null } });
     await event(sub.id, "plan_change_canceled");
@@ -687,9 +872,10 @@ export async function changePlan(subId: string, userId: string, planId: string):
   const plan = await getPlan(planId, { activeOnly: true });
   if (!plan) throw new BillingError("Plano não encontrado.");
   const price = planPriceCents(plan, sub.cycle as Cycle, s);
-  if (sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") await setPreapprovalAmount(sub.mpPreapprovalId, price);
-  // Anual: link de renovação com o valor antigo deixa de valer (é refeito com o novo)
-  await prisma.invoice.updateMany({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING" }, data: { status: "CANCELED" } });
+  if (sub.provider === "MERCADOPAGO" && sub.mpPreapprovalId && sub.mpSubscriptionStatus !== "cancelled") await setPreapprovalAmount(sub.mpPreapprovalId, price);
+  if (sub.provider === "ASAAS" && sub.asaasSubscriptionId) await asaas.updateSubscriptionValue(sub.asaasSubscriptionId, price, `VirtualStore ${plan.name} · ${cycleWord(sub.cycle)}`);
+  // Renovação feita pelo site: o link com o valor antigo deixa de valer (é refeito com o novo)
+  if (usesOwnRenewal(sub)) await prisma.invoice.updateMany({ where: { subscriptionId: sub.id, kind: "PLAN", status: "PENDING" }, data: { status: "CANCELED" } });
   await prisma.subscription.update({ where: { id: sub.id }, data: { nextPlan: plan.id, nextPlanPriceCents: price } });
   const from = await planName(sub.plan);
   await event(sub.id, "plan_change", price, `${from} → ${plan.name}`);
@@ -718,7 +904,7 @@ export async function runBillingJobs(now = new Date()): Promise<Record<string, n
     try {
       if (sub.status === "PENDING") {
         if (sub.createdAt < addDays(now, -s.pending_expire_days)) {
-          if (sub.mpPreapprovalId || (await prisma.invoice.count({ where: { subscriptionId: sub.id, reference: { not: null } } }))) sub = await reconcile(sub);
+          if (sub.mpPreapprovalId || sub.asaasSubscriptionId || (await prisma.invoice.count({ where: { subscriptionId: sub.id, reference: { not: null } } }))) sub = await reconcile(sub);
           if (sub.status === "PENDING") {
             await endSubscription(sub, "CANCELED", "not_paid");
             count.discarded++;
@@ -737,7 +923,7 @@ export async function runBillingJobs(now = new Date()): Promise<Record<string, n
         if (sub.pauseUntil && now >= sub.pauseUntil) {
           await restart(sub, sub.pauseUntil);
           count.resumed = (count.resumed ?? 0) + 1;
-        } else if (sub.cycle === "ANUAL" && sub.pauseUntil && sub.pauseUntil.getTime() - now.getTime() <= s.renewal_notice_days * DAY && !(sub.currentPeriodEnd && sub.currentPeriodEnd > sub.pauseUntil)) {
+        } else if (usesOwnRenewal(sub) && sub.pauseUntil && sub.pauseUntil.getTime() - now.getTime() <= s.renewal_notice_days * DAY && !(sub.currentPeriodEnd && sub.currentPeriodEnd > sub.pauseUntil)) {
           const inv = await ensureRenewalInvoice(sub, s.annual_max_installments);
           if (await addReminder(sub, `pause_renew:${sub.pauseUntil.toISOString().slice(0, 10)}`)) {
             await emailCustomer(sub.customerEmail, "Sua pausa está terminando", [
@@ -763,17 +949,17 @@ export async function runBillingJobs(now = new Date()): Promise<Record<string, n
           }
           sub = await reconcile(sub);
           if (sub.status === "ACTIVE" && sub.currentPeriodEnd && now >= sub.currentPeriodEnd) {
-            // Mensal: o Mercado Pago pode debitar com até 2 dias de atraso
-            if (sub.cycle === "ANUAL" || now >= addDays(sub.currentPeriodEnd, 2)) {
-              if (sub.cycle === "ANUAL") await ensureRenewalInvoice(sub, s.annual_max_installments);
-              await markPastDue(sub, sub.cycle === "ANUAL" ? "A renovação anual não foi paga." : "A cobrança mensal não foi confirmada.");
+            // Gateway que cobra sozinho (MP mensal, Asaas): espera até 2 dias pela confirmação
+            if (usesOwnRenewal(sub) || now >= addDays(sub.currentPeriodEnd, 2)) {
+              if (usesOwnRenewal(sub)) await ensureRenewalInvoice(sub, s.annual_max_installments);
+              await markPastDue(sub, usesOwnRenewal(sub) ? "A renovação não foi paga." : "A cobrança não foi confirmada.");
               count.pastDue++;
             }
           }
           continue;
         }
         // Anual: link da renovação alguns dias antes, com lembrete a 3 dias
-        if (sub.cycle === "ANUAL" && !sub.cancelAtPeriodEnd && !sub.pauseFrom && end.getTime() - now.getTime() <= s.renewal_notice_days * DAY) {
+        if (usesOwnRenewal(sub) && !sub.cancelAtPeriodEnd && !sub.pauseFrom && end.getTime() - now.getTime() <= s.renewal_notice_days * DAY) {
           const inv = await ensureRenewalInvoice(sub, s.annual_max_installments);
           const key = `renew:${end.toISOString().slice(0, 10)}`;
           const soon = end.getTime() - now.getTime() <= 3 * DAY;

@@ -880,3 +880,13 @@ footer.site .wrap.footer-bottom { display: block; margin-top: 40px; padding-top:
   .mobile-only { display: inline-flex !important; margin-bottom: 36px; }
 }
 @media (prefers-reduced-motion: reduce) { .auth2-copy, .auth2-box { animation: none; } }
+
+/* Opções em cartões (ex.: gateway de pagamento) */
+.cfg-options { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding-bottom: 6px; }
+.cfg-option { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--a-line); cursor: pointer; transition: border-color .15s, background .15s, box-shadow .15s; }
+.cfg-option:has(input:checked) { border-color: var(--a-brand); background: #F7F9FF; box-shadow: 0 0 0 3px var(--a-ring); }
+.cfg-option input { margin-top: 3px; accent-color: var(--a-brand); width: 16px; height: 16px; flex-shrink: 0; }
+.cfg-option b { display: block; font-size: 13px; }
+.cfg-option small { display: block; font-size: 11.5px; color: var(--a-muted); margin-top: 2px; line-height: 1.45; }
+@media (max-width: 900px) { .cfg-options { grid-template-columns: 1fr; } }
+.test-banner { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 8px 16px; background: #FEF5E6; color: #B45309; font-size: 13px; font-weight: 700; text-align: center; }

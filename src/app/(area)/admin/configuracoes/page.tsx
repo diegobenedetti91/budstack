@@ -12,6 +12,8 @@ export default async function ConfiguracoesPage() {
   const env = process.env;
   const integrations = [
     { label: "Mercado Pago", vars: "MP_ACCESS_TOKEN", ok: !!env.MP_ACCESS_TOKEN },
+    { label: "Asaas", vars: "ASAAS_API_KEY · ASAAS_WEBHOOK_TOKEN · ASAAS_ENV", ok: !!(env.ASAAS_API_KEY && env.ASAAS_WEBHOOK_TOKEN) },
+    { label: "Pagamento simulado (testes)", vars: "ALLOW_SIMULATED_PAYMENTS=1", ok: env.ALLOW_SIMULATED_PAYMENTS === "1" },
     { label: "E-mail (SMTP)", vars: "SMTP_HOST · SMTP_USER · SMTP_PASS", ok: !!(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS) },
     { label: "WhatsApp (CallMeBot)", vars: "CALLMEBOT_PHONE · CALLMEBOT_APIKEY", ok: !!(env.CALLMEBOT_PHONE && env.CALLMEBOT_APIKEY) },
     { label: "Rotina diária de cobrança", vars: "CRON_SECRET", ok: !!env.CRON_SECRET },

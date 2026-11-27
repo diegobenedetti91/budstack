@@ -8,6 +8,7 @@ import { getSettings } from "@/lib/settings";
 import { currentUser } from "@/lib/auth";
 import { formatDocument, formatPhone, money } from "@/lib/format";
 import { CheckoutForm } from "./CheckoutForm";
+import { GATEWAY_NAME, checkoutNote, gatewayOf, termsBilling } from "@/lib/billing-copy";
 
 export const metadata: Metadata = { title: "Assinar a VirtualStore", robots: { index: false } };
 
@@ -19,10 +20,12 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
   const cycle: Cycle = ciclo === "anual" ? "ANUAL" : "MENSAL";
   const price = planPriceCents(plan, cycle, s);
   const other = ciclo === "anual" ? "mensal" : "anual";
+  const g = gatewayOf(s);
 
   return (
     <>
       <SiteHeader />
+      {g === "SIMULADO" && <div className="test-banner">Ambiente de teste: o pagamento é simulado e nenhum valor é cobrado.</div>}
       <main className="sec soft">
         <div className="wrap">
           <div className="sec-head" style={{ marginBottom: 24 }}>
@@ -52,6 +55,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
               domainFee={money(s.domain_fee_cents)}
               setupDays={s.setup_business_days}
               refundDays={s.refund_days}
+              gateway={{ name: GATEWAY_NAME[g], mpEmailHint: g === "MERCADOPAGO" && ciclo === "mensal", terms: termsBilling(g, cycle) }}
               user={user ? { name: user.name, email: user.email, phone: user.phone ? formatPhone(user.phone) : "", document: user.document ? formatDocument(user.document) : "" } : null}
             />
 
@@ -80,9 +84,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
                 <span>{money(price)}</span>
               </div>
               <p className="note">
-                {ciclo === "anual"
-                  ? `Pix ou cartão em até ${s.annual_max_installments}x. Se a BudStack registrar o seu domínio, a taxa de ${money(s.domain_fee_cents)} entra neste pagamento.`
-                  : `Cobrança automática no cartão todo mês. Se a BudStack registrar o seu domínio, a taxa de ${money(s.domain_fee_cents)} é paga à parte, na sua área de cliente.`}
+                {checkoutNote(g, cycle, s)}
               </p>
               {plan.features.length > 0 && (
                 <details className="summary-features">
@@ -101,7 +103,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
                   <Icon name="shield" className="ico sm" /> Reembolso integral em até {s.refund_days} dias
                 </li>
                 <li>
-                  <Icon name="lock" className="ico sm" /> Pagamento pelo Mercado Pago
+                  <Icon name="lock" className="ico sm" /> Pagamento pelo {GATEWAY_NAME[g]}
                 </li>
                 <li>
                   <Icon name="users" className="ico sm" /> Cancele quando quiser, sem multa

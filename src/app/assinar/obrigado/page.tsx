@@ -15,7 +15,7 @@ export default async function ObrigadoPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   let sub = sp.pedido ? await findByCode(sp.pedido) : null;
 
-  // Ao voltar do Mercado Pago, confere o pagamento na hora (sem esperar o aviso)
+  // Ao voltar do gateway, confere o pagamento na hora (sem esperar o aviso)
   if (sub && sub.status === "PENDING") {
     const before = sub;
     sub = await reconcile(sub).catch((err) => {
@@ -69,7 +69,7 @@ function Status({ sub, planName, setupDays, whatsapp }: { sub: Subscription; pla
         </div>
         <h1>Aguardando a confirmação do pagamento</h1>
         <p>
-          Pedido <b>{sub.code}</b>. Assim que o Mercado Pago confirmar, esta página atualiza sozinha e você recebe um e-mail. No Pix, costuma levar poucos segundos.
+          Pedido <b>{sub.code}</b>. Assim que o pagamento for confirmado, esta página atualiza sozinha e você recebe um e-mail. No Pix, costuma levar poucos segundos; no boleto, até 3 dias úteis.
         </p>
         <div className="ctas">
           <Link href="/conta" className="btn btn-ghost">

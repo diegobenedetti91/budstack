@@ -12,7 +12,7 @@ import { money, whatsappUrl } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Planos da VirtualStore",
-  description: "Escolha o plano da sua loja virtual VirtualStore: mensal no cartão ou anual com desconto.",
+  description: "Escolha o plano da sua loja virtual VirtualStore: mensal ou anual com desconto.",
 };
 export const dynamic = "force-dynamic";
 

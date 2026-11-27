@@ -1,5 +1,6 @@
 import type { Settings } from "@/lib/settings-schema";
 import { money } from "@/lib/format";
+import { faqBilling, gatewayOf } from "@/lib/billing-copy";
 import { Icon } from "./Icon";
 
 /** Perguntas frequentes; prazos e valores vêm das configurações do painel. */
@@ -16,7 +17,7 @@ export function Faq({ s }: { s: Settings }) {
     ],
     [
       "Como funciona a cobrança?",
-      `No plano mensal, a cobrança é automática no cartão. No anual, você paga uma vez no Pix ou em até ${s.annual_max_installments}x no cartão e recebe o link da renovação antes do vencimento.`,
+      faqBilling(gatewayOf(s), s),
     ],
     [
       "Posso cancelar quando quiser?",
